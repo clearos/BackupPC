@@ -1,0 +1,11 @@
+# ----- logrotate config -------------
+# BackupPC rotates its own logs!  Do not enable this unless BackupPC's internal
+# log rotation system has been disabled or if you REALLY know what you are doing.
+
+#/var/log/BackupPC/LOG {
+#       missingok
+#       weekly
+#       notifempty
+#       nocompress
+#       create 644 backuppc backuppc
+#}

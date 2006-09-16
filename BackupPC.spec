@@ -1,6 +1,6 @@
 Name:		BackupPC
 Version:	2.1.2
-Release:	6%{?dist}
+Release:	7%{?dist}
 Summary:	BackupPC - high-performance backup system
 
 Group:		Applications/System
@@ -124,6 +124,9 @@ fi
 
 
 %changelog
+* Sat Aug 16 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-7
+- Release bump for rebuild
+
 * Tue Jul 25 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-6
 - One more config change
 

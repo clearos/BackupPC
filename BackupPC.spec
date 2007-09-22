@@ -1,29 +1,51 @@
-Name:		BackupPC
-Version:	2.1.2
-Release:	7%{?dist}
-Summary:	BackupPC - high-performance backup system
+%if %{?fedora}%{?rhel} >= 5
+%define useselinux 1
+%else
+%define useselinux 0
+%endif
 
-Group:		Applications/System
-License:	GPL
-URL:		http://backuppc.sourceforge.net/
-Source0:	http://dl.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
-Source1:	BackupPC.htaccess
-Source2:	BackupPC.logrotate
-Patch0:		BackupPC-2.1.2pl2.diff
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:	noarch
+Name:           BackupPC
+Version:        3.0.0
+Release:        3%{?dist}
+Summary:        BackupPC - high-performance backup system
 
-BuildRequires:	/bin/cat /bin/df /bin/gtar %{_bindir}/nmblookup %{_bindir}/rsync %{_sbindir}/sendmail %{_bindir}/smbclient %{_bindir}/split %{_bindir}/ssh
-Requires: httpd
-Requires: perl-suidperl
-Requires: perl(File::RsyncP)
-Requires: rsync
-Requires(pre): %{_sbindir}/useradd
-Requires(preun): /sbin/service, /sbin/chkconfig
-Requires(post): /sbin/chkconfig, /sbin/service, %{_sbindir}/usermod
-Requires(postun): /sbin/service
+Group:          Applications/System
+License:        GPLv2+
+URL:            http://backuppc.sourceforge.net/
+Source0:        http://dl.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
+Source1:        BackupPC.htaccess
+Source2:        BackupPC.logrotate
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildArch:      noarch
 
+BuildRequires:  /bin/cat
+BuildRequires:  /bin/df
+BuildRequires:  /bin/gtar
+BuildRequires:  %{_bindir}/nmblookup
+BuildRequires:  %{_bindir}/rsync
+BuildRequires:  %{_sbindir}/sendmail
+BuildRequires:  %{_bindir}/smbclient
+BuildRequires:  %{_bindir}/split
+BuildRequires:  %{_bindir}/ssh
+BuildRequires:  perl(Compress::Zlib)
 
+Requires:       httpd
+Requires:       perl-suidperl
+Requires:       perl(File::RsyncP)
+Requires:       perl(Compress::Zlib)
+Requires:       perl(Archive::Zip)
+Requires:       perl-Time-modules
+Requires:       perl(XML::RSS)
+Requires:       rsync
+Requires(pre):  %{_sbindir}/useradd
+Requires(preun): initscripts, chkconfig
+Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
+Requires(postun): initscripts
+%if %{useselinux}
+Requires:       policycoreutils
+BuildRequires:  selinux-policy-devel, checkpolicy
+%endif
+Provides:       backuppc = %{version}
 
 %description
 BackupPC is a high-performance, enterprise-grade system for backing up Linux
@@ -32,98 +54,179 @@ and easy to install and maintain.
 
 %prep
 %setup -q
-%patch0 -p0
-sed -i s/\"backuppc\"/\"$LOGNAME\"/ configure.pl
+sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
+iconv -f ISO-8859-1 -t UTF-8 ChangeLog > ChangeLog.utf && mv ChangeLog.utf ChangeLog
+pushd doc
+iconv -f ISO-8859-1 -t UTF-8 BackupPC.pod > BackupPC.pod.utf && mv BackupPC.pod.utf BackupPC.pod
+iconv -f ISO-8859-1 -t UTF-8 BackupPC.html > BackupPC.html.utf && mv BackupPC.html.utf BackupPC.html
+popd
 
-# There is no good build method for backuppc.  Instead the configure script
-# also does installation of files.
+%if %{useselinux}
+%{__mkdir} selinux
+pushd selinux
+
+cat >%{name}.te <<EOF
+policy_module(%{name},0.0.3)
+require {
+	type var_log_t;
+	type httpd_t;
+	class sock_file write;
+        type initrc_t;
+        class unix_stream_socket connectto;
+	type ssh_exec_t;
+	type ping_exec_t;
+	type sendmail_exec_t;
+	class file getattr;
+	type httpd_sys_content_t;
+	class sock_file getattr;
+}
+
+allow httpd_t httpd_sys_content_t:sock_file write;
+allow httpd_t initrc_t:unix_stream_socket connectto;
+allow httpd_t ping_exec_t:file getattr;
+allow httpd_t sendmail_exec_t:file getattr;
+allow httpd_t ssh_exec_t:file getattr;
+allow httpd_t httpd_sys_content_t:sock_file getattr;
+EOF
+
+cat >%{name}.fc <<EOF
+%{_sysconfdir}/%{name}                  system_u:object_r:httpd_sys_content_t:s0
+%{_sysconfdir}/%{name}/pc               system_u:object_r:httpd_sys_script_rw_t:s0
+%{_sysconfdir}/%{name}/config.pl	system_u:object_r:httpd_sys_content_t:s0
+%{_sysconfdir}/%{name}/hosts            system_u:object_r:httpd_sys_content_t:s0
+%{_localstatedir}/log/%{name}           system_u:object_r:httpd_sys_content_t:s0
+EOF
+%endif
+
+%build
+%if %{useselinux}
+     # SElinux 
+     pushd selinux
+     make -f %{_datadir}/selinux/devel/Makefile
+     popd
+%endif
+
+
 
 %install
-rm -rf %{buildroot}
-perl configure.pl --batch \
-		--cgi-dir %{buildroot}/%{_datadir}/%{name}/sbin/ \
-		--data-dir %{buildroot}/%{_localstatedir}/lib/%{name}/ \
-		--html-dir %{buildroot}/%{_datadir}/%{name}/html/ \
-		--html-dir-url /%{name}/images \
-		--install-dir %{buildroot}/%{_datadir}/%{name} \
-		--uid-ignore
-for f in `find %{buildroot}`
+rm -rf $RPM_BUILD_ROOT
+perl configure.pl \
+        --batch \
+        --dest-dir $RPM_BUILD_ROOT \
+        --config-dir %{_sysconfdir}/%{name}/ \
+        --cgi-dir %{_datadir}/%{name}/sbin/ \
+        --data-dir %{_localstatedir}/lib/%{name}/ \
+        --html-dir %{_datadir}/%{name}/html/ \
+        --html-dir-url /%{name}/images \
+        --log-dir %{_localstatedir}/log/%{name} \
+        --install-dir %{_datadir}/%{name} \
+        --hostname localhost \
+        --uid-ignore
+
+for f in `find $RPM_BUILD_ROOT`
 do
-	if [ -f $f ]
-	then
-		sed -i s,%{buildroot},,g $f
-		sed -i s,$LOGNAME,backuppc,g $f
-	fi
+        if [ -f $f ]
+        then
+                sed -i s,$LOGNAME,backuppc,g $f
+        fi
 done
-sed -i s,%{buildroot},,g init.d/linux-backuppc
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
-%{__mkdir} -p %{buildroot}/%{_initrddir}
-%{__mkdir} -p %{buildroot}/%{_sysconfdir}/httpd/conf.d/
-%{__mkdir} -p %{buildroot}/%{_sysconfdir}/logrotate.d/
-%{__mkdir} -p %{buildroot}/%{_localstatedir}/log/%{name}
+%{__mkdir} -p $RPM_BUILD_ROOT%{_initrddir}
+%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
+%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
+%{__mkdir} -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
+%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/pc
 
-%{__cp} init.d/linux-backuppc %{buildroot}/%{_initrddir}/%{name}
-%{__cp} %{SOURCE1} %{buildroot}/%{_sysconfdir}/httpd/conf.d/%{name}.conf
+%{__cp} init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
+%{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/%{name}.conf
 %{__cp} %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 
-%{__chmod} 755 %{buildroot}/%{_datadir}/%{name}/bin/*
-%{__chmod} 755 %{buildroot}/%{_initrddir}/%{name}
+%{__chmod} 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
+%{__chmod} 755 $RPM_BUILD_ROOT%{_initrddir}/backuppc
 
-%{__mv} %{buildroot}/%{_localstatedir}/lib/%{name}/conf %{buildroot}/%{_sysconfdir}/%{name}
+sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
-%{__rm} -f %{buildroot}/%{_datadir}/%{name}/html/CVS
-%{__rm} -rf %{buildroot}/%{_localstatedir}/lib/%{name}/log
-
-sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' %{buildroot}/%{_sysconfdir}/%{name}/config.pl
-sed -i 's/^\$Conf{ServerHost}\ =.*/$Conf{ServerHost} = "localhost";/' %{buildroot}/%{_sysconfdir}/%{name}/config.pl
-sed -i 's,^\$Conf{CgiURL}\ =.*,$Conf{CgiURL} = "http://localhost/cgi-bin/BackupPC_Admin";,' %{buildroot}/%{_sysconfdir}/%{name}/config.pl
-
-ln -s %{_sysconfdir}/%{name}/ %{buildroot}/%{_localstatedir}/lib/%{name}/conf
-ln -s ../../log/%{name}/ %{buildroot}/%{_localstatedir}/lib/%{name}/log
+%if %{useselinux}
+     # SElinux 
+     %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}
+     %{__install} -m644 selinux/%{name}.pp $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}/%{name}.pp
+%endif
 
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s /sbin/nologin backuppc 2> /dev/null || :
+%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s %{_bindir}/nologin backuppc 2> /dev/null || :
+
 
 %preun
 if [ $1 = 0 ]; then
-        /sbin/service %{name} stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del %{name} || :
+        service backuppc stop > /dev/null 2>&1 || :
+        chkconfig --del backuppc || :
 fi
 
 %post
-/sbin/chkconfig --add %{name} || :
-/sbin/service httpd condrestart > /dev/null 2>&1 || :
+%if %{useselinux}
+     # Install/update Selinux policy
+     semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
+     # files owned by RPM
+     fixfiles -R %{name} restore
+     # files created by app
+     restorecon -R %{_sysconfdir}/%{name}
+     restorecon -R %{_localstatedir}/lib/%{name}
+     restorecon -R %{_localstatedir}/log/%{name}
+%endif
+chkconfig --add backuppc || :
+service httpd condrestart > /dev/null 2>&1 || :
 %{_sbindir}/usermod -a -G backuppc apache || :
 
+
 %postun
-/sbin/service httpd condrestart > /dev/null 2>&1 || :
+service httpd condrestart > /dev/null 2>&1 || :
+%if %{useselinux}
+if [ "$1" -eq "0" ]; then
+     # Remove the SElinux policy.
+     semodule -r %{name} || :
+fi
+%endif
+
 
 %files
 %defattr(-,root,root,-)
 %doc README ChangeLog LICENSE doc/
-%dir %{_datadir}/%{name}/
 
-%dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name}
+%dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name} 
 %dir %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/
 
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 %config(noreplace) %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/*
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 
+%dir %{_datadir}/%{name} 
+%dir %{_datadir}/%{name}/sbin
 %{_datadir}/%{name}/[^s]*
-%{_initrddir}/%{name}
+%{_initrddir}/backuppc
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
 %attr(-,backuppc,root) %{_localstatedir}/lib/%{name}/
 
+%if %{useselinux}
+%{_datadir}/selinux/packages/%{name}/%{name}.pp
+%endif
 
 %changelog
+* Fri Sep 21 2007 Johan Cwiklinski <johan AT x-tnd DOT ba> 3.0.0-3
+- Fixed SELinux policy module
+
+* Wed Sep 12 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.0.0-2
+- Added SELinux policy module
+
+* Tue Jan 30 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.0.0-1
+- Rebuild RPM for v 3.0.0
+
 * Sat Aug 16 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-7
 - Release bump for rebuild
 

@@ -5,8 +5,8 @@
 %endif
 
 Name:           BackupPC
-Version:        3.0.0
-Release:        3%{?dist}
+Version:        3.1.0
+Release:        1%{?dist}
 Summary:        BackupPC - high-performance backup system
 
 Group:          Applications/System
@@ -15,6 +15,7 @@ URL:            http://backuppc.sourceforge.net/
 Source0:        http://dl.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
+Source3:        BackupPC-README.fedora
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -37,6 +38,7 @@ Requires:       perl(Archive::Zip)
 Requires:       perl-Time-modules
 Requires:       perl(XML::RSS)
 Requires:       rsync
+Requires:       samba-client
 Requires(pre):  %{_sbindir}/useradd
 Requires(preun): initscripts, chkconfig
 Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
@@ -60,6 +62,7 @@ pushd doc
 iconv -f ISO-8859-1 -t UTF-8 BackupPC.pod > BackupPC.pod.utf && mv BackupPC.pod.utf BackupPC.pod
 iconv -f ISO-8859-1 -t UTF-8 BackupPC.html > BackupPC.html.utf && mv BackupPC.html.utf BackupPC.html
 popd
+cp %{SOURCE3} README.fedora
 
 %if %{useselinux}
 %{__mkdir} selinux
@@ -68,17 +71,17 @@ pushd selinux
 cat >%{name}.te <<EOF
 policy_module(%{name},0.0.3)
 require {
-	type var_log_t;
-	type httpd_t;
-	class sock_file write;
+        type var_log_t;
+        type httpd_t;
+        class sock_file write;
         type initrc_t;
         class unix_stream_socket connectto;
-	type ssh_exec_t;
-	type ping_exec_t;
-	type sendmail_exec_t;
-	class file getattr;
-	type httpd_sys_content_t;
-	class sock_file getattr;
+        type ssh_exec_t;
+        type ping_exec_t;
+        type sendmail_exec_t;
+        class file getattr;
+        type httpd_sys_content_t;
+        class sock_file getattr;
 }
 
 allow httpd_t httpd_sys_content_t:sock_file write;
@@ -92,7 +95,7 @@ EOF
 cat >%{name}.fc <<EOF
 %{_sysconfdir}/%{name}                  system_u:object_r:httpd_sys_content_t:s0
 %{_sysconfdir}/%{name}/pc               system_u:object_r:httpd_sys_script_rw_t:s0
-%{_sysconfdir}/%{name}/config.pl	system_u:object_r:httpd_sys_content_t:s0
+%{_sysconfdir}/%{name}/config.pl        system_u:object_r:httpd_sys_content_t:s0
 %{_sysconfdir}/%{name}/hosts            system_u:object_r:httpd_sys_content_t:s0
 %{_localstatedir}/log/%{name}           system_u:object_r:httpd_sys_content_t:s0
 EOF
@@ -146,6 +149,7 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 %{__chmod} 755 $RPM_BUILD_ROOT%{_initrddir}/backuppc
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
+sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
 %if %{useselinux}
      # SElinux 
@@ -196,7 +200,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%doc README ChangeLog LICENSE doc/
+%doc README README.fedora ChangeLog LICENSE doc/
 
 %dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name} 
 %dir %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/
@@ -218,7 +222,13 @@ fi
 %endif
 
 %changelog
-* Fri Sep 21 2007 Johan Cwiklinski <johan AT x-tnd DOT ba> 3.0.0-3
+* Thu Nov 29 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-1
+- New upstream version
+- Added samba-client as a dependency
+- Added readme.fedora
+- Changed CGI admin path in default config file
+
+* Fri Sep 21 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.0.0-3
 - Fixed SELinux policy module
 
 * Wed Sep 12 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.0.0-2

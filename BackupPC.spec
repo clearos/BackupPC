@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        BackupPC - high-performance backup system
 
 Group:          Applications/System
@@ -163,7 +163,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s %{_bindir}/nologin backuppc 2> /dev/null || :
+%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s /sbin/nologin backuppc 2> /dev/null || :
 
 
 %preun
@@ -222,6 +222,9 @@ fi
 %endif
 
 %changelog
+* Sat Apr 05 2008 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-2
+- correcting nologin path
+
 * Thu Nov 29 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-1
 - New upstream version
 - Added samba-client as a dependency

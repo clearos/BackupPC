@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        BackupPC - high-performance backup system
 
 Group:          Applications/System
@@ -174,6 +174,7 @@ fi
 
 %post
 %if %{useselinux}
+(
      # Install/update Selinux policy
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
      # files owned by RPM
@@ -182,6 +183,7 @@ fi
      restorecon -R %{_sysconfdir}/%{name}
      restorecon -R %{_localstatedir}/lib/%{name}
      restorecon -R %{_localstatedir}/log/%{name}
+) &>/dev/null
 %endif
 chkconfig --add backuppc || :
 service httpd condrestart > /dev/null 2>&1 || :
@@ -192,8 +194,10 @@ service httpd condrestart > /dev/null 2>&1 || :
 service httpd condrestart > /dev/null 2>&1 || :
 %if %{useselinux}
 if [ "$1" -eq "0" ]; then
+     (
      # Remove the SElinux policy.
      semodule -r %{name} || :
+     )&>/dev/null
 fi
 %endif
 
@@ -222,6 +226,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 11 2008 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-3
+- using /dev/null with SELinux policy to avoid broken pipe errors (bug #432149)
+
 * Sat Apr 05 2008 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-2
 - correcting nologin path
 

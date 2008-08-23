@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        BackupPC - high-performance backup system
 
 Group:          Applications/System
@@ -163,7 +163,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %pre
-%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s %{_bindir}/nologin backuppc 2> /dev/null || :
+%{_sbindir}/useradd -d %{_localstatedir}/lib/%{name} -r -s /sbin/nologin backuppc 2> /dev/null || :
 
 
 %preun
@@ -174,6 +174,7 @@ fi
 
 %post
 %if %{useselinux}
+(
      # Install/update Selinux policy
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
      # files owned by RPM
@@ -182,6 +183,7 @@ fi
      restorecon -R %{_sysconfdir}/%{name}
      restorecon -R %{_localstatedir}/lib/%{name}
      restorecon -R %{_localstatedir}/log/%{name}
+) &>/dev/null
 %endif
 chkconfig --add backuppc || :
 service httpd condrestart > /dev/null 2>&1 || :
@@ -192,8 +194,10 @@ service httpd condrestart > /dev/null 2>&1 || :
 service httpd condrestart > /dev/null 2>&1 || :
 %if %{useselinux}
 if [ "$1" -eq "0" ]; then
+     (
      # Remove the SElinux policy.
      semodule -r %{name} || :
+     )&>/dev/null
 fi
 %endif
 
@@ -222,6 +226,10 @@ fi
 %endif
 
 %changelog
+* Sat Aug 23 2008 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-2
+- using /dev/null with SELinux policy to avoid broken pipe errors (bug #432149)
+- correcting nologin path
+
 * Thu Nov 29 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-1
 - New upstream version
 - Added samba-client as a dependency

@@ -7,7 +7,7 @@
 Name:           BackupPC
 Version:        3.1.0
 Release:        3%{?dist}
-Summary:        BackupPC - high-performance backup system
+Summary:        High-performance backup system
 
 Group:          Applications/System
 License:        GPLv2+

@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -226,6 +226,9 @@ fi
 %endif
 
 %changelog
+* Mon Feb 23 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
 * Mon Aug 11 2008 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-3
 - using /dev/null with SELinux policy to avoid broken pipe errors (bug #432149)
 

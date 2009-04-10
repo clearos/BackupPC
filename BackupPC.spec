@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -16,6 +16,7 @@ Source0:        http://dl.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
+Patch0:         BackupPC-TopDir_change.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -56,6 +57,7 @@ and easy to install and maintain.
 
 %prep
 %setup -q
+%patch0 -p1
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 iconv -f ISO-8859-1 -t UTF-8 ChangeLog > ChangeLog.utf && mv ChangeLog.utf ChangeLog
 pushd doc
@@ -226,6 +228,9 @@ fi
 %endif
 
 %changelog
+* Fri Apr 10 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-5
+- Fix TopDir change (bug #473944)
+
 * Mon Feb 23 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 

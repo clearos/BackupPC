@@ -1,0 +1,21 @@
+diff -up BackupPC-3.1.0/lib/BackupPC/Lib.pm.patch BackupPC-3.1.0/lib/BackupPC/Lib.pm
+--- BackupPC-3.1.0/lib/BackupPC/Lib.pm.patch	2009-04-10 17:57:04.000000000 +0200
++++ BackupPC-3.1.0/lib/BackupPC/Lib.pm	2009-04-10 17:57:57.000000000 +0200
+@@ -152,8 +152,6 @@ sub new
+     # Clean up %ENV and setup other variables.
+     #
+     delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+-    $bpc->{PoolDir}  = "$bpc->{TopDir}/pool";
+-    $bpc->{CPoolDir} = "$bpc->{TopDir}/cpool";
+     if ( defined(my $error = $bpc->ConfigRead()) ) {
+         print(STDERR $error, "\n");
+         return;
+@@ -167,6 +165,8 @@ sub new
+         $paths->{$dir} = $bpc->{$dir} = $bpc->{Conf}{$dir};
+     }
+     $bpc->{storage}->setPaths($paths);
++    $bpc->{PoolDir}  = "$bpc->{TopDir}/pool";
++    $bpc->{CPoolDir} = "$bpc->{TopDir}/cpool";
+ 
+     #
+     # Verify we are running as the correct user

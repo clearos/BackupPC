@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -228,6 +228,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
 * Fri Apr 10 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-5
 - Fix TopDir change (bug #473944)
 

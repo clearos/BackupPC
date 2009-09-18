@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -95,11 +95,9 @@ allow httpd_t httpd_sys_content_t:sock_file getattr;
 EOF
 
 cat >%{name}.fc <<EOF
-%{_sysconfdir}/%{name}                  system_u:object_r:httpd_sys_content_t:s0
-%{_sysconfdir}/%{name}/pc               system_u:object_r:httpd_sys_script_rw_t:s0
-%{_sysconfdir}/%{name}/config.pl        system_u:object_r:httpd_sys_content_t:s0
-%{_sysconfdir}/%{name}/hosts            system_u:object_r:httpd_sys_content_t:s0
-%{_localstatedir}/log/%{name}           system_u:object_r:httpd_sys_content_t:s0
+%{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_content_t,s0)
+%{_sysconfdir}/%{name}/pc(/.*)?         gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
+%{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_sys_content_t,s0)
 EOF
 %endif
 
@@ -228,6 +226,9 @@ fi
 %endif
 
 %changelog
+* Fri Sep 18 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-7
+- Fix SELinux policy module for UserEmailInfo.pl file
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 

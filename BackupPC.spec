@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -226,6 +226,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 23 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-8
+- Rebuild with latest SELinux policy (bug #524630)
+
 * Fri Sep 18 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-7
 - Fix SELinux policy module for UserEmailInfo.pl file
 

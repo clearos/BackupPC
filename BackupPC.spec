@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -150,6 +150,7 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
+sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
 %if %{useselinux}
      # SElinux 
@@ -226,6 +227,9 @@ fi
 %endif
 
 %changelog
+* Fri Sep 25 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-9
+- Fix security bug (bug #518412)
+
 * Wed Sep 23 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-8
 - Rebuild with latest SELinux policy (bug #524630)
 

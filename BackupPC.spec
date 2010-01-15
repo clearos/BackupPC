@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -95,11 +95,9 @@ allow httpd_t httpd_sys_content_t:sock_file getattr;
 EOF
 
 cat >%{name}.fc <<EOF
-%{_sysconfdir}/%{name}                  system_u:object_r:httpd_sys_content_t:s0
-%{_sysconfdir}/%{name}/pc               system_u:object_r:httpd_sys_script_rw_t:s0
-%{_sysconfdir}/%{name}/config.pl        system_u:object_r:httpd_sys_content_t:s0
-%{_sysconfdir}/%{name}/hosts            system_u:object_r:httpd_sys_content_t:s0
-%{_localstatedir}/log/%{name}           system_u:object_r:httpd_sys_content_t:s0
+%{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_content_t,s0)
+%{_sysconfdir}/%{name}/pc(/.*)?         gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
+%{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_sys_content_t,s0)
 EOF
 %endif
 
@@ -152,6 +150,7 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
+sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
 %if %{useselinux}
      # SElinux 
@@ -179,8 +178,6 @@ fi
 (
      # Install/update Selinux policy
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
-     # files owned by RPM
-     fixfiles -R %{name} restore
      # files created by app
      restorecon -R %{_sysconfdir}/%{name}
      restorecon -R %{_localstatedir}/lib/%{name}
@@ -228,6 +225,11 @@ fi
 %endif
 
 %changelog
+* Fri Jan 15 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-4
+- Fix selinux labelling backup directoru (bug #525948)
+- Fix security bug (bug #518412)
+- Fix SELinux policy module for UserEmailInfo.pl file
+
 * Fri Apr 10 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-3
 - Fix TopDir change (bug #473944)
 

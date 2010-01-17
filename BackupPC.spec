@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -180,7 +180,6 @@ fi
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
      # files created by app
      restorecon -R %{_sysconfdir}/%{name}
-     restorecon -R %{_localstatedir}/lib/%{name}
      restorecon -R %{_localstatedir}/log/%{name}
 ) &>/dev/null
 %endif
@@ -225,8 +224,11 @@ fi
 %endif
 
 %changelog
+* Sun Jan 17 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-11
+- Really fix selinux labelling backup directory (bug #525948)
+
 * Fri Jan 15 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-10
-- Fix selinux labelling backup directoru (bug #525948)
+- Fix selinux labelling backup directory (bug #525948)
 
 * Fri Sep 25 2009 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-9
 - Fix security bug (bug #518412)

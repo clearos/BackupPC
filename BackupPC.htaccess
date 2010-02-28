@@ -9,9 +9,10 @@
 order deny,allow
 deny from all
 allow from 127.0.0.1
+allow from ::1
 AuthType Basic
 AuthUserFile /etc/BackupPC/apache.users
-AuthName "BackupPC
+AuthName "BackupPC"
 
 require valid-user
 

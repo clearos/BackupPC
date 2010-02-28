@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        11%{?dist}
+Release:        12%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -224,6 +224,10 @@ fi
 %endif
 
 %changelog
+* Sun Feb 28 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-12
+- Add "::1" to the apache config file for default allowed adresses
+- Fix a typo in the apache config file
+
 * Sun Jan 17 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-11
 - Really fix selinux labelling backup directory (bug #525948)
 

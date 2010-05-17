@@ -6,13 +6,13 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
 License:        GPLv2+
 URL:            http://backuppc.sourceforge.net/
-Source0:        http://dl.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
+Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -95,8 +95,7 @@ allow httpd_t httpd_sys_content_t:sock_file getattr;
 EOF
 
 cat >%{name}.fc <<EOF
-%{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_content_t,s0)
-%{_sysconfdir}/%{name}/pc(/.*)?         gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
+%{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
 %{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_sys_content_t,s0)
 EOF
 %endif
@@ -224,6 +223,9 @@ fi
 %endif
 
 %changelog
+* Mon May 17 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-6
+- Fix for bug #592762
+
 * Sun Jan 17 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-5
 - Really fix selinux labelling backup directory (bug #525948)
 

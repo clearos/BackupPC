@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        14%{?dist}
+Release:        14.1%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -223,6 +223,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul 09 2010 Mike McGrath <mmcgrath@redhat.com> 3.1.0-14.1
+- Rebuilding to fix perl-suidperl broken dep
+
 * Mon May 17 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-14
 - Fix for bug #592762
 

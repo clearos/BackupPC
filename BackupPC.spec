@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        14.1%{?dist}
+Release:        15%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -16,9 +16,12 @@ Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
+#A C wrapper to use since perl-suidperl is no longer provided
+Source4:        BackupPC_Admin.c
 Patch0:         BackupPC-TopDir_change.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      noarch
+# No longer noarch due to the C wrapper
+#BuildArch:      noarch
 
 BuildRequires:  /bin/cat
 BuildRequires:  /bin/df
@@ -32,7 +35,6 @@ BuildRequires:  %{_bindir}/ssh
 BuildRequires:  perl(Compress::Zlib)
 
 Requires:       httpd
-Requires:       perl-suidperl
 Requires:       perl(File::RsyncP)
 Requires:       perl(Compress::Zlib)
 Requires:       perl(Archive::Zip)
@@ -101,6 +103,7 @@ EOF
 %endif
 
 %build
+gcc -o BackupPC_Admin %{SOURCE4} $RPM_OPT_FLAGS
 %if %{useselinux}
      # SElinux 
      pushd selinux
@@ -150,6 +153,10 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
+
+#perl-suidperl is no longer avaialable, we use a C wrapper
+%{__mv} $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
+%{__install} -p -m 4755 BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
 
 %if %{useselinux}
      # SElinux 
@@ -216,6 +223,7 @@ fi
 %{_initrddir}/backuppc
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
+%attr(750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 %attr(-,backuppc,root) %{_localstatedir}/lib/%{name}/
 
 %if %{useselinux}
@@ -223,6 +231,9 @@ fi
 %endif
 
 %changelog
+* Sat Jul 31 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-15
+- perl-suidperl is no longer available (fix bug #611009)
+
 * Fri Jul 09 2010 Mike McGrath <mmcgrath@redhat.com> 3.1.0-14.1
 - Rebuilding to fix perl-suidperl broken dep
 

@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        15%{?dist}
+Release:        16%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -67,6 +67,7 @@ iconv -f ISO-8859-1 -t UTF-8 BackupPC.pod > BackupPC.pod.utf && mv BackupPC.pod.
 iconv -f ISO-8859-1 -t UTF-8 BackupPC.html > BackupPC.html.utf && mv BackupPC.html.utf BackupPC.html
 popd
 cp %{SOURCE3} README.fedora
+cp %{SOURCE4} BackupPC_Admin.c
 
 %if %{useselinux}
 %{__mkdir} selinux
@@ -103,7 +104,7 @@ EOF
 %endif
 
 %build
-gcc -o BackupPC_Admin %{SOURCE4} $RPM_OPT_FLAGS
+gcc -o BackupPC_Admin BackupPC_Admin.c $RPM_OPT_FLAGS
 %if %{useselinux}
      # SElinux 
      pushd selinux
@@ -156,7 +157,7 @@ sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM
 
 #perl-suidperl is no longer avaialable, we use a C wrapper
 %{__mv} $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
-%{__install} -p -m 4755 BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
+%{__install} -p BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
 
 %if %{useselinux}
      # SElinux 
@@ -231,6 +232,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 02 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-16
+- Debugingo with no sources (fix bug #620257)
+
 * Sat Jul 31 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-15
 - perl-suidperl is no longer available (fix bug #611009)
 

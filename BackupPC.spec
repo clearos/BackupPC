@@ -6,7 +6,7 @@
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        16%{?dist}
+Release:        17%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -232,6 +232,9 @@ fi
 %endif
 
 %changelog
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Mon Aug 02 2010 Johan Cwiklinski <johan AT x-tnd DOT be> 3.1.0-16
 - Debugingo with no sources (fix bug #620257)
 

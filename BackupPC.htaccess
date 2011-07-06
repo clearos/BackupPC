@@ -21,3 +21,4 @@ require valid-user
 
 Alias           /BackupPC/images        /usr/share/BackupPC/html/
 ScriptAlias     /BackupPC               /usr/share/BackupPC/sbin/BackupPC_Admin
+ScriptAlias     /backuppc               /usr/share/BackupPC/sbin/BackupPC_Admin

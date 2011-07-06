@@ -232,6 +232,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.1.0-18
+- add lower case script alias for typing impaired
+
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 

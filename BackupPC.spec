@@ -39,7 +39,10 @@ Requires:       perl(Archive::Zip)
 Requires:       perl-Time-modules
 Requires:       perl(XML::RSS)
 Requires:       rsync
-Requires:       samba-client
+# This is a file dependency so EL5 can use samba or samba-client or
+# samba3x-client
+Requires:       %{_bindir}/smbclient
+Requires:       %{_bindir}/nmblookup
 Requires(pre):  %{_sbindir}/useradd
 Requires(preun): initscripts, chkconfig
 Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
@@ -239,6 +242,8 @@ fi
 - add lower case script alias for typing impaired
 - cleanup selinux macros
 - minor spec cleanup
+- make samba dependency on actual files required to EL5 can use samba-client
+  or samba3x-client (bz #667479)
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

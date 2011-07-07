@@ -102,6 +102,7 @@ cat >%{name}.fc <<EOF
 %{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
 %{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_sys_content_t,s0)
 EOF
+popd
 %endif
 
 %build

@@ -52,8 +52,8 @@ Provides:       backuppc = %{version}
 
 %description
 BackupPC is a high-performance, enterprise-grade system for backing up Linux
-and WinXX PCs and laptops to a server's disk. BackupPC is highly configurable
-and easy to install and maintain.
+and WinXX and Mac OS X PCs and laptops to a server's disk. BackupPC is highly
+configurable and easy to install and maintain.
 
 %prep
 %setup -q

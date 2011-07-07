@@ -16,10 +16,8 @@ Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
 #A C wrapper to use since perl-suidperl is no longer provided
 Source4:        BackupPC_Admin.c
-Patch0:         BackupPC-TopDir_change.patch
+
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-# No longer noarch due to the C wrapper
-#BuildArch:      noarch
 
 BuildRequires:  /bin/cat
 BuildRequires:  /bin/df
@@ -31,6 +29,9 @@ BuildRequires:  %{_bindir}/smbclient
 BuildRequires:  %{_bindir}/split
 BuildRequires:  %{_bindir}/ssh
 BuildRequires:  perl(Compress::Zlib)
+
+# Unbundled libraries
+Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
 Requires:       httpd
 Requires:       perl(File::RsyncP)
@@ -61,7 +62,6 @@ configurable and easy to install and maintain.
 %prep
 
 %setup -q
-%patch0 -p1
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -107,6 +107,13 @@ cat >%{name}.fc <<EOF
 EOF
 popd
 %endif
+
+# attempt to unbundle as much as possible
+for m in Net/FTP; do
+  rm -rf lib/$m
+  pwd; ls -l
+  sed -i "\@lib/$m@d" configure.pl 
+done
 
 %build
 gcc -o BackupPC_Admin BackupPC_Admin.c $RPM_OPT_FLAGS
@@ -244,6 +251,8 @@ fi
 - minor spec cleanup
 - make samba dependency on actual files required to EL5 can use samba-client
   or samba3x-client (bz #667479)
+- unbundle perl(Net::FTP::AutoReconnect) and perl(Net::FTP::RetrHandle)
+- remove old patch that is no longer needed
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

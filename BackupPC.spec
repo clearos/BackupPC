@@ -56,14 +56,14 @@ and WinXX and Mac OS X PCs and laptops to a server's disk. BackupPC is highly
 configurable and easy to install and maintain.
 
 %prep
+
 %setup -q
 %patch0 -p1
+
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
-iconv -f ISO-8859-1 -t UTF-8 ChangeLog > ChangeLog.utf && mv ChangeLog.utf ChangeLog
-pushd doc
-iconv -f ISO-8859-1 -t UTF-8 BackupPC.pod > BackupPC.pod.utf && mv BackupPC.pod.utf BackupPC.pod
-iconv -f ISO-8859-1 -t UTF-8 BackupPC.html > BackupPC.html.utf && mv BackupPC.html.utf BackupPC.html
-popd
+for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
+  iconv -f ISO-8859-1 -t UTF-8 $f > $f.utf && mv $f.utf $f
+done
 cp %{SOURCE3} README.fedora
 cp %{SOURCE4} BackupPC_Admin.c
 
@@ -233,6 +233,7 @@ fi
 * Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.1.0-18
 - add lower case script alias for typing impaired
 - cleanup selinux macros
+- minor spec cleanup
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

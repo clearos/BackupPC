@@ -3,8 +3,8 @@
 %endif
 
 Name:           BackupPC
-Version:        3.1.0
-Release:        18%{?dist}
+Version:        3.2.1
+Release:        1%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -233,7 +233,8 @@ fi
 %endif
 
 %changelog
-* Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.1.0-18
+* Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
+- v 3.2.1
 - add lower case script alias for typing impaired
 - cleanup selinux macros
 - minor spec cleanup

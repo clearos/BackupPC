@@ -64,6 +64,9 @@ sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
   iconv -f ISO-8859-1 -t UTF-8 $f > $f.utf && mv $f.utf $f
 done
+
+chmod a-x LICENSE README
+
 cp %{SOURCE3} README.fedora
 cp %{SOURCE4} BackupPC_Admin.c
 

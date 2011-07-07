@@ -1,12 +1,10 @@
-%if %{?fedora}%{?rhel} >= 5
-%define useselinux 1
-%else
-%define useselinux 0
+%if 0%{?rhel} && 0%{?rhel} < 5
+%define without_selinux 1
 %endif
 
 Name:           BackupPC
 Version:        3.1.0
-Release:        17%{?dist}
+Release:        18%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -46,7 +44,7 @@ Requires(pre):  %{_sbindir}/useradd
 Requires(preun): initscripts, chkconfig
 Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
 Requires(postun): initscripts
-%if %{useselinux}
+%if ! 0%{?without_selinux}
 Requires:       policycoreutils
 BuildRequires:  selinux-policy-devel, checkpolicy
 %endif
@@ -69,7 +67,7 @@ popd
 cp %{SOURCE3} README.fedora
 cp %{SOURCE4} BackupPC_Admin.c
 
-%if %{useselinux}
+%if ! 0%{?without_selinux}
 %{__mkdir} selinux
 pushd selinux
 
@@ -105,7 +103,7 @@ EOF
 
 %build
 gcc -o BackupPC_Admin BackupPC_Admin.c $RPM_OPT_FLAGS
-%if %{useselinux}
+%if ! 0%{?without_selinux}
      # SElinux 
      pushd selinux
      make -f %{_datadir}/selinux/devel/Makefile
@@ -159,7 +157,7 @@ sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM
 %{__mv} $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 %{__install} -p BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
 
-%if %{useselinux}
+%if ! 0%{?without_selinux}
      # SElinux 
      %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}
      %{__install} -m644 selinux/%{name}.pp $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}/%{name}.pp
@@ -181,7 +179,7 @@ if [ $1 = 0 ]; then
 fi
 
 %post
-%if %{useselinux}
+%if ! 0%{?without_selinux}
 (
      # Install/update Selinux policy
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
@@ -197,7 +195,7 @@ service httpd condrestart > /dev/null 2>&1 || :
 
 %postun
 service httpd condrestart > /dev/null 2>&1 || :
-%if %{useselinux}
+%if ! 0%{?without_selinux}
 if [ "$1" -eq "0" ]; then
      (
      # Remove the SElinux policy.
@@ -227,13 +225,14 @@ fi
 %attr(750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 %attr(-,backuppc,root) %{_localstatedir}/lib/%{name}/
 
-%if %{useselinux}
+%if ! 0%{?without_selinux}
 %{_datadir}/selinux/packages/%{name}/%{name}.pp
 %endif
 
 %changelog
 * Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.1.0-18
 - add lower case script alias for typing impaired
+- cleanup selinux macros
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

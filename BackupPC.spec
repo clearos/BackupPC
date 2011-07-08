@@ -11,6 +11,7 @@ Group:          Applications/System
 License:        GPLv2+
 URL:            http://backuppc.sourceforge.net/
 Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
+Patch0:         BackupPC-3.2.1-locatedb.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -62,6 +63,8 @@ configurable and easy to install and maintain.
 %prep
 
 %setup -q
+
+%patch0 -p1 -b .locatedb
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -206,6 +209,14 @@ chkconfig --add backuppc || :
 service httpd condrestart > /dev/null 2>&1 || :
 %{_sbindir}/usermod -a -G backuppc apache || :
 
+# add BackupPC backup directories to PRUNEPATHS in locate database
+UPDATEDB=/etc/updatedb.conf
+if [ -w $UPDATEDB ]; then
+  grep ^PRUNEPATHS $UPDATEDB | grep %{_sharedstatedir}/%{name} > /dev/null
+  if [ $? -eq 1 ]; then
+    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' $UPDATEDB
+  fi
+fi
 
 %postun
 service httpd condrestart > /dev/null 2>&1 || :
@@ -215,6 +226,11 @@ if [ "$1" -eq "0" ]; then
      # Remove the SElinux policy.
      semodule -r %{name} || :
      )&>/dev/null
+
+    # remove BackupPC backup directories from PRUNEPATHS in locate database
+    if [ -w $UPDATEDB ]; then
+      sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' $UPDATEDB
+    fi
 fi
 %endif
 
@@ -244,7 +260,7 @@ fi
 %endif
 
 %changelog
-* Wed Jul 06 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
+* Thu Jul 07 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
 - v 3.2.1
 - add lower case script alias for typing impaired
 - cleanup selinux macros
@@ -253,6 +269,8 @@ fi
   or samba3x-client (bz #667479)
 - unbundle perl(Net::FTP::AutoReconnect) and perl(Net::FTP::RetrHandle)
 - remove old patch that is no longer needed
+- attempt to make sure $Conf{TopDir} is listed in updatedb PRUNEPATHS,
+  otherwise at least generate a warning on statup (bz #554491)
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

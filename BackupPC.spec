@@ -12,6 +12,7 @@ License:        GPLv2+
 URL:            http://backuppc.sourceforge.net/
 Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Patch0:         BackupPC-3.2.1-locatedb.patch
+Patch1:         BackupPC-3.2.1-rundir.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -65,6 +66,7 @@ configurable and easy to install and maintain.
 %setup -q
 
 %patch0 -p1 -b .locatedb
+%patch1 -p1 -b .rundir
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -271,6 +273,7 @@ fi
 - remove old patch that is no longer needed
 - attempt to make sure $Conf{TopDir} is listed in updatedb PRUNEPATHS,
   otherwise at least generate a warning on statup (bz #554491)
+- move sockets to /var/run (bz #719499)
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

@@ -166,26 +166,25 @@ done
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
 %if 0%{?_with_systemd}
-mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
+install -d $RPM_BUILD_ROOT/%{_unitdir}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
 %else
-mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
+install -d $RPM_BUILD_ROOT/%{_initrddir}
+install -d $RPM_BUILD_ROOT/%{_localstatedir}/run/%{name}
 %endif
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/
+install -d $RPM_BUILD_ROOT/%{_localstatedir}/log/%{name}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
 %if 0%{?_with_systemd}
-cp -a %{SOURCE5} %{buildroot}/%{_unitdir}/
-cp -a %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/backuppc
+install -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
+install -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/BackupPC.conf
 %else
 cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
-cp -a %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/%{name}.conf
-cp -a %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
-cp -a %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
+install -m 0644 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/%{name}.conf
+install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
 
 chmod 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
 
@@ -296,7 +295,7 @@ fi
 
 %if 0%{?_with_systemd}
 %{_unitdir}/backuppc.service
-%{_sysconfdir}/tmpfiles.d/backuppc
+%{_sysconfdir}/tmpfiles.d/BackupPC.conf
 %else
 %attr(0755,root,root) %{_initrddir}/backuppc
 %dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 

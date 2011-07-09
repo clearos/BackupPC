@@ -1,5 +1,5 @@
 %if 0%{?rhel} && 0%{?rhel} < 5
-%define without_selinux 1
+%define _without_selinux 1
 %endif
 
 %if 0%{?fedora} && 0%{?fedora} > 15
@@ -60,7 +60,7 @@ Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
 Requires(postun): initscripts
 %endif
 
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
 Requires:       policycoreutils
 BuildRequires:  selinux-policy-devel, checkpolicy
 %endif
@@ -89,7 +89,7 @@ chmod a-x LICENSE README
 cp %{SOURCE3} README.fedora
 cp %{SOURCE4} BackupPC_Admin.c
 
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
 %{__mkdir} selinux
 pushd selinux
 
@@ -133,7 +133,7 @@ done
 
 %build
 gcc -o BackupPC_Admin BackupPC_Admin.c $RPM_OPT_FLAGS
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
      # SElinux 
      pushd selinux
      make -f %{_datadir}/selinux/devel/Makefile
@@ -194,7 +194,7 @@ sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM
 mv $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 install -p BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
 
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
      # SElinux 
      %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}
      %{__install} -m644 selinux/%{name}.pp $RPM_BUILD_ROOT%{_datadir}/selinux/packages/%{name}/%{name}.pp
@@ -222,7 +222,7 @@ if [ $1 = 0 ]; then
 fi
 
 %post
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
 (
      # Install/update Selinux policy
      semodule -i %{_datadir}/selinux/packages/%{name}/%{name}.pp
@@ -255,7 +255,7 @@ fi
 
 %postun
 service httpd condrestart > /dev/null 2>&1 || :
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
 if [ "$1" -eq "0" ]; then
      (
      # Remove the SElinux policy.
@@ -302,7 +302,7 @@ fi
 %attr(750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 %attr(-,backuppc,root) %{_localstatedir}/lib/%{name}/
 
-%if ! 0%{?without_selinux}
+%if ! 0%{?_without_selinux}
 %{_datadir}/selinux/packages/%{name}/%{name}.pp
 %endif
 

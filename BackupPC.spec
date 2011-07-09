@@ -41,6 +41,9 @@ BuildRequires:  systemd-units
 # Unbundled libraries
 Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
+# Unbundled libraries
+Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
+
 Requires:       httpd
 Requires:       perl(File::RsyncP), perl(Compress::Zlib), perl(Archive::Zip)
 Requires:       perl-Time-modules, perl(XML::RSS)
@@ -321,6 +324,8 @@ fi
 - move sockets to /var/run (bz #719499)
 - add support for systemd starting at F16 (bz #699441)
 - patch to move pid dir under /var/run
+- minor spec cleanup
+- unbundle Net::FTP::*
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

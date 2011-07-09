@@ -26,13 +26,10 @@ Source5:        backuppc.service
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  /bin/cat
-BuildRequires:  /bin/df
-BuildRequires:  /bin/gtar
-BuildRequires:  %{_bindir}/nmblookup
+BuildRequires:  /bin/cat, /bin/df, /bin/gtar
+BuildRequires:  %{_bindir}/smbclient, %{_bindir}/nmblookup
 BuildRequires:  %{_bindir}/rsync
 BuildRequires:  %{_sbindir}/sendmail
-BuildRequires:  %{_bindir}/smbclient
 BuildRequires:  %{_bindir}/split
 BuildRequires:  %{_bindir}/ssh
 BuildRequires:  perl(Compress::Zlib)
@@ -44,16 +41,13 @@ BuildRequires:  systemd-units
 Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
 Requires:       httpd
-Requires:       perl(File::RsyncP)
-Requires:       perl(Compress::Zlib)
-Requires:       perl(Archive::Zip)
-Requires:       perl-Time-modules
-Requires:       perl(XML::RSS)
+Requires:       perl(File::RsyncP), perl(Compress::Zlib), perl(Archive::Zip)
+Requires:       perl-Time-modules, perl(XML::RSS)
 Requires:       rsync
 # This is a file dependency so EL5 can use samba or samba-client or
 # samba3x-client
-Requires:       %{_bindir}/smbclient
-Requires:       %{_bindir}/nmblookup
+Requires:       %{_bindir}/smbclient, %{_bindir}/nmblookup
+
 Requires(pre):  %{_sbindir}/useradd
 %if 0%{?_with_systemd}
 Requires(preun): systemd-units
@@ -144,8 +138,6 @@ gcc -o BackupPC_Admin BackupPC_Admin.c $RPM_OPT_FLAGS
      popd
 %endif
 
-
-
 %install
 rm -rf $RPM_BUILD_ROOT
 perl configure.pl \
@@ -171,33 +163,33 @@ done
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
 %if 0%{?_with_systemd}
-%{__mkdir} -p $RPM_BUILD_ROOT/%{_unitdir}
+mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
 %else
-%{__mkdir} -p $RPM_BUILD_ROOT%{_initrddir}
+mkdir -p $RPM_BUILD_ROOT%{_initrddir}
 %endif
-%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
-%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
-%{__mkdir} -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
-%{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/pc
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/pc
 
 %if 0%{?_with_systemd}
-%{__cp} %{SOURCE5} %{buildroot}/%{_unitdir}/
+cp -a %{SOURCE5} %{buildroot}/%{_unitdir}/
 %else
-%{__cp} init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
+cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
-%{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/%{name}.conf
-%{__cp} %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
-%{__cp} %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
+cp -a %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/%{name}.conf
+cp -a %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
+cp -a %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 
-%{__chmod} 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
+chmod 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
 #perl-suidperl is no longer avaialable, we use a C wrapper
-%{__mv} $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
-%{__install} -p BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/BackupPC_Admin.pl
+install -p BackupPC_Admin $RPM_BUILD_ROOT%{_datadir}/%{name}/sbin/
 
 %if ! 0%{?without_selinux}
      # SElinux 
@@ -315,7 +307,7 @@ fi
 - v 3.2.1
 - add lower case script alias for typing impaired
 - cleanup selinux macros
-- minor spec cleanup
+- spec cleanup
 - make samba dependency on actual files required to EL5 can use samba-client
   or samba3x-client (bz #667479)
 - unbundle perl(Net::FTP::AutoReconnect) and perl(Net::FTP::RetrHandle)

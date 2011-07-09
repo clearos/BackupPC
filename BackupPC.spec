@@ -44,6 +44,9 @@ Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 # Unbundled libraries
 Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
+# Unbundled libraries
+Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
+
 Requires:       httpd
 Requires:       perl(File::RsyncP), perl(Compress::Zlib), perl(Archive::Zip)
 Requires:       perl-Time-modules, perl(XML::RSS)

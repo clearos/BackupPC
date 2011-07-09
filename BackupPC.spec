@@ -171,6 +171,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
 
 %if 0%{?_with_systemd}
 cp -a %{SOURCE5} %{buildroot}/%{_unitdir}/
@@ -279,6 +280,7 @@ fi
 
 %dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name} 
 %dir %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/
+%dir %attr(-,backuppc,backuppc) %{_localstatedir}/run/%{name} 
 
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 %config(noreplace) %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/*

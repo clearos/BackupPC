@@ -2,6 +2,10 @@
 %define without_selinux 1
 %endif
 
+%if 0%{?fedora} && 0%{?fedora} > 15
+%global _with_systemd 1
+%endif
+
 Name:           BackupPC
 Version:        3.2.1
 Release:        1%{?dist}
@@ -18,6 +22,7 @@ Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
 #A C wrapper to use since perl-suidperl is no longer provided
 Source4:        BackupPC_Admin.c
+Source5:        backuppc.service
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -31,6 +36,9 @@ BuildRequires:  %{_bindir}/smbclient
 BuildRequires:  %{_bindir}/split
 BuildRequires:  %{_bindir}/ssh
 BuildRequires:  perl(Compress::Zlib)
+%if 0%{?_with_systemd}
+BuildRequires:  systemd-units
+%endif
 
 # Unbundled libraries
 Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
@@ -47,9 +55,16 @@ Requires:       rsync
 Requires:       %{_bindir}/smbclient
 Requires:       %{_bindir}/nmblookup
 Requires(pre):  %{_sbindir}/useradd
+%if 0%{?_with_systemd}
+Requires(preun): systemd-units
+Requires(post):  systemd-units, %{_sbindir}/usermod
+Requires(postun): systemd-units
+%else
 Requires(preun): initscripts, chkconfig
 Requires(post): initscripts, chkconfig, %{_sbindir}/usermod
 Requires(postun): initscripts
+%endif
+
 %if ! 0%{?without_selinux}
 Requires:       policycoreutils
 BuildRequires:  selinux-policy-devel, checkpolicy
@@ -155,18 +170,26 @@ do
 done
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
+%if 0%{?_with_systemd}
+%{__mkdir} -p $RPM_BUILD_ROOT/%{_unitdir}
+%else
 %{__mkdir} -p $RPM_BUILD_ROOT%{_initrddir}
+%endif
 %{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
 %{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
 %{__mkdir} -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
 %{__mkdir} -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/pc
 
+%if 0%{?_with_systemd}
+%{__cp} %{SOURCE5} %{buildroot}/%{_unitdir}/
+%else
 %{__cp} init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
+%endif
 %{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/%{name}.conf
+%{__cp} %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 %{__cp} %{SOURCE2} %{buildroot}/%{_sysconfdir}/logrotate.d/%{name}
 
 %{__chmod} 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
-%{__chmod} 755 $RPM_BUILD_ROOT%{_initrddir}/backuppc
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
@@ -193,8 +216,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %preun
 if [ $1 = 0 ]; then
-        service backuppc stop > /dev/null 2>&1 || :
-        chkconfig --del backuppc || :
+  # Package removal, not upgrade
+  %if 0%{?_with_systemd}
+  /bin/systemctl --no-reload disable backuppc.service > /dev/null 2>&1 || :
+  /bin/systemctl stop backuppc.service > /dev/null 2>&1 || :
+  %else
+  service backuppc stop > /dev/null 2>&1 || :
+  chkconfig --del backuppc || :
+  %endif
 fi
 
 %post
@@ -207,9 +236,18 @@ fi
      restorecon -R %{_localstatedir}/log/%{name}
 ) &>/dev/null
 %endif
-chkconfig --add backuppc || :
-service httpd condrestart > /dev/null 2>&1 || :
-%{_sbindir}/usermod -a -G backuppc apache || :
+
+if [ $1 -eq 1 ]; then
+  # initial installation
+  %if 0%{?_with_systemd}
+  /bin/systemctl daemon-reload > /dev/null 2>&1 || :
+  %else
+  chkconfig --add backuppc || :
+  service httpd condrestart > /dev/null 2>&1 || :
+  %endif
+  %{_sbindir}/usermod -a -G backuppc apache || :
+fi
+
 
 # add BackupPC backup directories to PRUNEPATHS in locate database
 UPDATEDB=/etc/updatedb.conf
@@ -235,6 +273,12 @@ if [ "$1" -eq "0" ]; then
     fi
 fi
 %endif
+if [ $1 -ge 1]; then
+  # Package upgrade, not uninstall
+  %if 0%{?_with_systemd}
+  /bin/systemctl try-restart backuppc.service > /dev/null 2>&1 || :  
+  %endif
+fi
 
 
 %files
@@ -251,7 +295,12 @@ fi
 %dir %{_datadir}/%{name} 
 %dir %{_datadir}/%{name}/sbin
 %{_datadir}/%{name}/[^s]*
-%{_initrddir}/backuppc
+
+%if 0%{?_with_systemd}
+%attr(0644,root,root) %{_unitdir}/backuppc.service
+%else
+%attr(0755,root,root) %{_initrddir}/backuppc
+%endif
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
 %attr(750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
@@ -274,6 +323,7 @@ fi
 - attempt to make sure $Conf{TopDir} is listed in updatedb PRUNEPATHS,
   otherwise at least generate a warning on statup (bz #554491)
 - move sockets to /var/run (bz #719499)
+- add support for systemd starting at F16 (bz #699441)
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

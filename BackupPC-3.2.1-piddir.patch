@@ -1,0 +1,36 @@
+diff -Naur BackupPC-3.2.1-pristine/bin/BackupPC BackupPC-3.2.1/bin/BackupPC
+--- BackupPC-3.2.1-pristine/bin/BackupPC	2011-04-24 21:31:54.000000000 -0600
++++ BackupPC-3.2.1/bin/BackupPC	2011-07-08 21:14:46.609762024 -0600
+@@ -363,11 +363,11 @@
+     # Write out our initial status and save our PID
+     #
+     StatusWrite();
+-    unlink("$LogDir/BackupPC.pid");
+-    if ( open(PID, ">", "$LogDir/BackupPC.pid") ) {
++    unlink("/var/run/BackupPC/BackupPC.pid");
++    if ( open(PID, ">", "/var/run/BackupPC/BackupPC.pid") ) {
+         print(PID $$);
+         close(PID);
+-        chmod(0444, "$LogDir/BackupPC.pid");
++        chmod(0444, "/var/run/BackupPC/BackupPC.pid");
+     }
+ 
+     #
+@@ -1846,7 +1846,7 @@
+         close(LOG);
+         LogFileOpen();
+         print(LOG "Fatal error: unhandled signal $SigName\n");
+-        unlink("$LogDir/BackupPC.pid");
++        unlink("/var/run/BackupPC/BackupPC.pid");
+         confess("Got new signal $SigName... quitting\n");
+     } else {
+ 	$SigName = shift;
+@@ -1968,7 +1968,7 @@
+     }
+     delete($Info{pid});
+     StatusWrite();
+-    unlink("$LogDir/BackupPC.pid");
++    unlink("/var/run/BackupPC/BackupPC.pid");
+     exit(1);
+ }
+ 

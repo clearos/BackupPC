@@ -17,6 +17,7 @@ URL:            http://backuppc.sourceforge.net/
 Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
+Patch2:         BackupPC-3.2.1-piddir.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -76,6 +77,7 @@ configurable and easy to install and maintain.
 
 %patch0 -p1 -b .locatedb
 %patch1 -p1 -b .rundir
+%patch2 -p1 -b .piddir
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -318,6 +320,7 @@ fi
   otherwise at least generate a warning on statup (bz #554491)
 - move sockets to /var/run (bz #719499)
 - add support for systemd starting at F16 (bz #699441)
+- patch to move pid dir under /var/run
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

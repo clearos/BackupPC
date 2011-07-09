@@ -310,9 +310,9 @@ fi
 %endif
 
 %changelog
-* Thu Jul 07 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
+* Fri Jul 08 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
 - v 3.2.1
-- add lower case script alias for typing impaired
+- add lower case script URL alias for typing impaired
 - cleanup selinux macros
 - spec cleanup
 - make samba dependency on actual files required to EL5 can use samba-client
@@ -324,7 +324,6 @@ fi
 - move sockets to /var/run (bz #719499)
 - add support for systemd starting at F16 (bz #699441)
 - patch to move pid dir under /var/run
-- minor spec cleanup
 - unbundle Net::FTP::*
 - add support for tmpfiles.d
 

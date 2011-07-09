@@ -170,7 +170,7 @@ mkdir -p $RPM_BUILD_ROOT%{_initrddir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/pc
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
 
 %if 0%{?_with_systemd}
 cp -a %{SOURCE5} %{buildroot}/%{_unitdir}/

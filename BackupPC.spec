@@ -1,4 +1,4 @@
-%if 0%{?rhel} && 0%{?rhel} < 5
+
 %define _without_selinux 1
 %endif
 
@@ -24,6 +24,7 @@ Source3:        BackupPC-README.fedora
 #A C wrapper to use since perl-suidperl is no longer provided
 Source4:        BackupPC_Admin.c
 Source5:        backuppc.service
+Source6:        BackupPC.tmpfiles
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -37,12 +38,6 @@ BuildRequires:  perl(Compress::Zlib)
 %if 0%{?_with_systemd}
 BuildRequires:  systemd-units
 %endif
-
-# Unbundled libraries
-Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
-
-# Unbundled libraries
-Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
 # Unbundled libraries
 Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
@@ -172,17 +167,19 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
 %if 0%{?_with_systemd}
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
 %else
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
 %endif
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/%{name}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
 
 %if 0%{?_with_systemd}
 cp -a %{SOURCE5} %{buildroot}/%{_unitdir}/
+cp -a %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/backuppc
 %else
 cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
@@ -288,7 +285,6 @@ fi
 
 %dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name} 
 %dir %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/
-%dir %attr(-,backuppc,backuppc) %{_localstatedir}/run/%{name} 
 
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
 %config(noreplace) %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/*
@@ -299,9 +295,11 @@ fi
 %{_datadir}/%{name}/[^s]*
 
 %if 0%{?_with_systemd}
-%attr(0644,root,root) %{_unitdir}/backuppc.service
+%{_unitdir}/backuppc.service
+%{_sysconfdir}/tmpfiles.d/backuppc
 %else
 %attr(0755,root,root) %{_initrddir}/backuppc
+%dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 
 %endif
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
@@ -329,6 +327,7 @@ fi
 - patch to move pid dir under /var/run
 - minor spec cleanup
 - unbundle Net::FTP::*
+- add support for tmpfiles.d
 
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.0-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

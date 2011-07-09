@@ -179,7 +179,7 @@ install -d $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
 %if 0%{?_with_systemd}
 install -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
-install -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/BackupPC.conf
+install -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
 %else
 cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
@@ -189,7 +189,7 @@ install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
 chmod 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
 
 sed -i 's/^\$Conf{XferMethod}\ =.*/$Conf{XferMethod} = "rsync";/' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
-sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/BackupPC";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
+sed -i 's|^\$Conf{CgiURL}\ =.*|$Conf{CgiURL} = "http://localhost/%{name}";|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 sed -i 's|ClientNameAlias           => 1,|ClientNameAlias           => 0,|' $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/config.pl
 
 #perl-suidperl is no longer avaialable, we use a C wrapper
@@ -295,7 +295,7 @@ fi
 
 %if 0%{?_with_systemd}
 %{_unitdir}/backuppc.service
-%{_sysconfdir}/tmpfiles.d/BackupPC.conf
+%config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
 %else
 %attr(0755,root,root) %{_initrddir}/backuppc
 %dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 

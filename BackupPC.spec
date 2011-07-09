@@ -1,5 +1,5 @@
-
-%define _without_selinux 1
+%if 0%{?rhel} && 0%{?rhel} < 5
+%global _without_selinux 1
 %endif
 
 %if 0%{?fedora} && 0%{?fedora} > 15

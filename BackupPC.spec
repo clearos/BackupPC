@@ -270,7 +270,7 @@ if [ "$1" -eq "0" ]; then
     fi
 fi
 %endif
-if [ $1 -ge 1]; then
+if [ $1 -ge 1 ]; then
   # Package upgrade, not uninstall
   %if 0%{?_with_systemd}
   /bin/systemctl try-restart backuppc.service > /dev/null 2>&1 || :  

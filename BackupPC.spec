@@ -106,21 +106,21 @@ require {
         type ping_exec_t;
         type sendmail_exec_t;
         class file getattr;
-        type httpd_sys_content_t;
+        type var_run_t;
         class sock_file getattr;
 }
 
-allow httpd_t httpd_sys_content_t:sock_file write;
+allow httpd_t var_run_t:sock_file write;
 allow httpd_t initrc_t:unix_stream_socket connectto;
 allow httpd_t ping_exec_t:file getattr;
 allow httpd_t sendmail_exec_t:file getattr;
 allow httpd_t ssh_exec_t:file getattr;
-allow httpd_t httpd_sys_content_t:sock_file getattr;
+allow httpd_t var_run_t:sock_file getattr;
 EOF
 
 cat >%{name}.fc <<EOF
 %{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
-%{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_sys_content_t,s0)
+%{_localstatedir}/run/%{name}(/.*)?     gen_context(system_u:object_r:var_run_t,s0)
 EOF
 popd
 %endif

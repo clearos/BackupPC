@@ -1,0 +1,24 @@
+diff -Naur BackupPC-3.2.1-pristine/bin/BackupPC BackupPC-3.2.1/bin/BackupPC
+--- BackupPC-3.2.1-pristine/bin/BackupPC	2011-04-24 21:31:54.000000000 -0600
++++ BackupPC-3.2.1/bin/BackupPC	2011-07-07 22:25:55.287651463 -0600
+@@ -1885,7 +1885,7 @@
+             print(LOG $bpc->timeStamp, "unix socket() failed: $!\n");
+             exit(1);
+         }
+-        my $sockFile = "$LogDir/BackupPC.sock";
++        my $sockFile = "/var/run/BackupPC/BackupPC.sock";
+         unlink($sockFile);
+         if ( !bind(SERVER_UNIX, sockaddr_un($sockFile)) ) {
+             print(LOG $bpc->timeStamp, "unix bind() failed: $!\n");
+diff -Naur BackupPC-3.2.1-pristine/lib/BackupPC/Lib.pm BackupPC-3.2.1/lib/BackupPC/Lib.pm
+--- BackupPC-3.2.1-pristine/lib/BackupPC/Lib.pm	2011-04-24 21:31:55.000000000 -0600
++++ BackupPC-3.2.1/lib/BackupPC/Lib.pm	2011-07-07 22:26:46.744614593 -0600
+@@ -686,7 +686,7 @@
+     #
+     # First try the unix-domain socket
+     #
+-    my $sockFile = "$bpc->{LogDir}/BackupPC.sock";
++    my $sockFile = "/var/run/BackupPC/BackupPC.sock";
+     socket(*FH, PF_UNIX, SOCK_STREAM, 0)     || return "unix socket: $!";
+     if ( !connect(*FH, sockaddr_un($sockFile)) ) {
+         my $err = "unix connect: $!";

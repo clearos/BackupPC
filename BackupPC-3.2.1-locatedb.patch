@@ -1,0 +1,37 @@
+diff -Naur BackupPC-3.2.1-pristine/init.d/src/linux-backuppc BackupPC-3.2.1/init.d/src/linux-backuppc
+--- BackupPC-3.2.1-pristine/init.d/src/linux-backuppc	2011-04-24 21:31:55.000000000 -0600
++++ BackupPC-3.2.1/init.d/src/linux-backuppc	2011-07-07 21:36:41.363281386 -0600
+@@ -20,6 +20,25 @@
+ 
+ RETVAL=0
+ 
++topDirCheck()
++{
++    updatedb=/etc/updatedb.conf
++    topdir=$(perl <<_EOF_
++      require '__CONFDIR__/config.pl';
++      print \$Conf{TopDir};
++_EOF_
++)
++    if [ -r $updatedb ]; then
++      grep ^PRUNEPATHS $updatedb | grep ${topdir%%/} > /dev/null
++      if [ $? -eq 1 ]; then
++        logger -t BackupPC -s "WARNING:  Your BackupPC \$Conf{TopDir} is not listed in the locate"
++        logger -t BackupPC -s "database configuration's PRUNEPATHS.  This may cause all of your"
++        logger -t BackupPC -s "backed up files to be indexed!"
++      fi
++    fi
++}
++
++
+ start() {
+     #
+     # You can set the SMB share password here is you wish.  Otherwise
+@@ -38,6 +57,7 @@
+     echo
+     [ $RETVAL -eq 0 ] && touch /var/lock/subsys/backuppc || \
+        RETVAL=1
++    topDirCheck 
+     return $RETVAL
+ }	
+ 

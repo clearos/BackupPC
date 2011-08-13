@@ -2,13 +2,19 @@
 %global _without_selinux 1
 %endif
 
+# tmpfiles.d support starts in Fedora 15
+%if 0%{?fedora} && 0%{?fedora} > 14
+%global _with_tmpfilesd 1
+%endif
+
+# systemd was introduced in Fedora 15, but we don't support it until Fedora 16
 %if 0%{?fedora} && 0%{?fedora} > 15
 %global _with_systemd 1
 %endif
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -165,26 +171,27 @@ do
 done
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
+%if 0%{?_with_tmpfilesd}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
+install -p -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
+%endif
+
 %if 0%{?_with_systemd}
 install -d $RPM_BUILD_ROOT/%{_unitdir}
-install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
+install -p -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
 %else
 install -d $RPM_BUILD_ROOT/%{_initrddir}
 install -d $RPM_BUILD_ROOT/%{_localstatedir}/run/%{name}
+install -p -m 0755 init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
+
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/
 install -d $RPM_BUILD_ROOT/%{_localstatedir}/log/%{name}
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
-%if 0%{?_with_systemd}
-install -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
-install -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
-%else
-cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
-%endif
-install -m 0644 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/%{name}.conf
-install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
+install -p -m 0644 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/%{name}.conf
+install -p -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
 
 chmod 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
 
@@ -310,6 +317,11 @@ fi
 %endif
 
 %changelog
+* Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.2-2
+- change macro conditionals to include tmpfiles.d support starting at
+  Fedora 15 (bz #730053)
+- change install lines to preserve timestamps
+
 * Fri Jul 08 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
 - v 3.2.1
 - add lower case script URL alias for typing impaired

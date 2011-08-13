@@ -300,12 +300,16 @@ fi
 %dir %{_datadir}/%{name}/sbin
 %{_datadir}/%{name}/[^s]*
 
-%if 0%{?_with_systemd}
-%{_unitdir}/backuppc.service
+%if 0%{?_with_tmpfilesd}
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
 %else
-%attr(0755,root,root) %{_initrddir}/backuppc
 %dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 
+%endif
+
+%if 0%{?_with_systemd}
+%{_unitdir}/backuppc.service
+%else
+%attr(0755,root,root) %{_initrddir}/backuppc
 %endif
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin

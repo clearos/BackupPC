@@ -14,7 +14,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -321,7 +321,7 @@ fi
 %endif
 
 %changelog
-* Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.2-3
+* Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-4
 - change macro conditionals to include tmpfiles.d support starting at
   Fedora 15 (bz #730053)
 - change install lines to preserve timestamps

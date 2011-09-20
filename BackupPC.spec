@@ -12,9 +12,11 @@
 %global _with_systemd 1
 %endif
 
+%global _updatedb_conf /etc/updatedb.conf
+
 Name:           BackupPC
 Version:        3.2.1
-Release:        4%{?dist}
+Release:        6%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -254,36 +256,39 @@ fi
 
 
 # add BackupPC backup directories to PRUNEPATHS in locate database
-UPDATEDB=/etc/updatedb.conf
-if [ -w $UPDATEDB ]; then
-  grep ^PRUNEPATHS $UPDATEDB | grep %{_sharedstatedir}/%{name} > /dev/null
+if [ -w %{_updatedb_conf} ]; then
+  grep ^PRUNEPATHS %{_updatedb_conf} | grep %{_sharedstatedir}/%{name} > /dev/null
   if [ $? -eq 1 ]; then
-    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' $UPDATEDB
+    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' %{_updatedb_conf}
+  fi
+fi
+:
+
+%postun
+# clear out any BackupPC configuration in apache
+service httpd condrestart > /dev/null 2>&1 || :
+
+if [ $1 -eq 0 ]; then
+  # uninstall
+  %if ! 0%{?_without_selinux}
+  # Remove the SElinux policy.
+  semodule -r %{name} &> /dev/null || :
+  %endif
+
+  # remove BackupPC backup directories from PRUNEPATHS in locate database
+  if [ -w %{_updatedb_conf} ]; then
+    sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' %{_updatedb_conf} || :
   fi
 fi
 
-%postun
-service httpd condrestart > /dev/null 2>&1 || :
-%if ! 0%{?_without_selinux}
-if [ "$1" -eq "0" ]; then
-     (
-     # Remove the SElinux policy.
-     semodule -r %{name} || :
-     )&>/dev/null
-
-    # remove BackupPC backup directories from PRUNEPATHS in locate database
-    if [ -w $UPDATEDB ]; then
-      sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' $UPDATEDB
-    fi
-fi
-%endif
-if [ $1 -ge 1 ]; then
-  # Package upgrade, not uninstall
+if [ $1 -eq 1 ]; then
+  # package upgrade, not uninstall
   %if 0%{?_with_systemd}
   /bin/systemctl try-restart backuppc.service > /dev/null 2>&1 || :  
   %endif
+  # at least one command required
+  :
 fi
-
 
 %files
 %defattr(-,root,root,-)
@@ -321,6 +326,10 @@ fi
 %endif
 
 %changelog
+* Mon Sep 19 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-5
+- fix postun scriptlet error (bz #736946)
+- make postun scriptlet more coherent
+
 * Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-4
 - change macro conditionals to include tmpfiles.d support starting at
   Fedora 15 (bz #730053)

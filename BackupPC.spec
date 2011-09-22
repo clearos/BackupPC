@@ -103,7 +103,7 @@ cp %{SOURCE4} BackupPC_Admin.c
 pushd selinux
 
 cat >%{name}.te <<EOF
-policy_module(%{name},0.0.4)
+policy_module(%{name},0.0.5)
 require {
         type var_log_t;
         type httpd_t;
@@ -118,6 +118,7 @@ require {
         class sock_file getattr;
         type httpd_log_t;
         class file open;
+        class dir read;
 }
 
 allow httpd_t var_run_t:sock_file write;
@@ -127,6 +128,7 @@ allow httpd_t sendmail_exec_t:file getattr;
 allow httpd_t ssh_exec_t:file getattr;
 allow httpd_t var_run_t:sock_file getattr;
 allow httpd_t httpd_log_t:file open;
+allow httpd_t httpd_log_t:dir read;
 EOF
 
 cat >%{name}.fc <<EOF
@@ -330,10 +332,11 @@ fi
 %endif
 
 %changelog
-* Mon Sep 19 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-5
+* Wed Sep 21 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-6
 - fix postun scriptlet error (bz #736946)
 - make postun scriptlet more coherent
-- change selinux context on log files to httpd_log_t (bz #730704)
+- change selinux context on log files to httpd_log_t and allow access
+  to them (bz #730704)
 
 * Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-4
 - change macro conditionals to include tmpfiles.d support starting at

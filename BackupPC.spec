@@ -2,13 +2,21 @@
 %global _without_selinux 1
 %endif
 
+# tmpfiles.d support starts in Fedora 15
+%if 0%{?fedora} && 0%{?fedora} > 14
+%global _with_tmpfilesd 1
+%endif
+
+# systemd was introduced in Fedora 15, but we don't support it until Fedora 16
 %if 0%{?fedora} && 0%{?fedora} > 15
 %global _with_systemd 1
 %endif
 
+%global _updatedb_conf /etc/updatedb.conf
+
 Name:           BackupPC
 Version:        3.2.1
-Release:        1%{?dist}
+Release:        6%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -95,7 +103,7 @@ cp %{SOURCE4} BackupPC_Admin.c
 pushd selinux
 
 cat >%{name}.te <<EOF
-policy_module(%{name},0.0.3)
+policy_module(%{name},0.0.5)
 require {
         type var_log_t;
         type httpd_t;
@@ -108,6 +116,9 @@ require {
         class file getattr;
         type var_run_t;
         class sock_file getattr;
+        type httpd_log_t;
+        class file open;
+        class dir read;
 }
 
 allow httpd_t var_run_t:sock_file write;
@@ -116,11 +127,14 @@ allow httpd_t ping_exec_t:file getattr;
 allow httpd_t sendmail_exec_t:file getattr;
 allow httpd_t ssh_exec_t:file getattr;
 allow httpd_t var_run_t:sock_file getattr;
+allow httpd_t httpd_log_t:file open;
+allow httpd_t httpd_log_t:dir read;
 EOF
 
 cat >%{name}.fc <<EOF
 %{_sysconfdir}/%{name}(/.*)?            gen_context(system_u:object_r:httpd_sys_script_rw_t,s0)
 %{_localstatedir}/run/%{name}(/.*)?     gen_context(system_u:object_r:var_run_t,s0)
+%{_localstatedir}/log/%{name}(/.*)?     gen_context(system_u:object_r:httpd_log_t,s0)
 EOF
 popd
 %endif
@@ -165,26 +179,27 @@ do
 done
 sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 
+%if 0%{?_with_tmpfilesd}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
+install -p -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
+%endif
+
 %if 0%{?_with_systemd}
 install -d $RPM_BUILD_ROOT/%{_unitdir}
-install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
+install -p -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
 %else
 install -d $RPM_BUILD_ROOT/%{_initrddir}
 install -d $RPM_BUILD_ROOT/%{_localstatedir}/run/%{name}
+install -p -m 0755 init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
+
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/
 install -d $RPM_BUILD_ROOT/%{_localstatedir}/log/%{name}
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
-%if 0%{?_with_systemd}
-install -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
-install -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
-%else
-cp -a init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
-%endif
-install -m 0644 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/%{name}.conf
-install -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
+install -p -m 0644 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/httpd/conf.d/%{name}.conf
+install -p -m 0644 %{SOURCE2} $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/%{name}
 
 chmod 755 $RPM_BUILD_ROOT%{_datadir}/%{name}/bin/*
 
@@ -247,36 +262,39 @@ fi
 
 
 # add BackupPC backup directories to PRUNEPATHS in locate database
-UPDATEDB=/etc/updatedb.conf
-if [ -w $UPDATEDB ]; then
-  grep ^PRUNEPATHS $UPDATEDB | grep %{_sharedstatedir}/%{name} > /dev/null
+if [ -w %{_updatedb_conf} ]; then
+  grep ^PRUNEPATHS %{_updatedb_conf} | grep %{_sharedstatedir}/%{name} > /dev/null
   if [ $? -eq 1 ]; then
-    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' $UPDATEDB
+    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' %{_updatedb_conf}
+  fi
+fi
+:
+
+%postun
+# clear out any BackupPC configuration in apache
+service httpd condrestart > /dev/null 2>&1 || :
+
+if [ $1 -eq 0 ]; then
+  # uninstall
+  %if ! 0%{?_without_selinux}
+  # Remove the SElinux policy.
+  semodule -r %{name} &> /dev/null || :
+  %endif
+
+  # remove BackupPC backup directories from PRUNEPATHS in locate database
+  if [ -w %{_updatedb_conf} ]; then
+    sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' %{_updatedb_conf} || :
   fi
 fi
 
-%postun
-service httpd condrestart > /dev/null 2>&1 || :
-%if ! 0%{?_without_selinux}
-if [ "$1" -eq "0" ]; then
-     (
-     # Remove the SElinux policy.
-     semodule -r %{name} || :
-     )&>/dev/null
-
-    # remove BackupPC backup directories from PRUNEPATHS in locate database
-    if [ -w $UPDATEDB ]; then
-      sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' $UPDATEDB
-    fi
-fi
-%endif
-if [ $1 -ge 1 ]; then
-  # Package upgrade, not uninstall
+if [ $1 -eq 1 ]; then
+  # package upgrade, not uninstall
   %if 0%{?_with_systemd}
   /bin/systemctl try-restart backuppc.service > /dev/null 2>&1 || :  
   %endif
+  # at least one command required
+  :
 fi
-
 
 %files
 %defattr(-,root,root,-)
@@ -293,12 +311,16 @@ fi
 %dir %{_datadir}/%{name}/sbin
 %{_datadir}/%{name}/[^s]*
 
-%if 0%{?_with_systemd}
-%{_unitdir}/backuppc.service
+%if 0%{?_with_tmpfilesd}
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
 %else
-%attr(0755,root,root) %{_initrddir}/backuppc
 %dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 
+%endif
+
+%if 0%{?_with_systemd}
+%{_unitdir}/backuppc.service
+%else
+%attr(0755,root,root) %{_initrddir}/backuppc
 %endif
 
 %attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
@@ -310,6 +332,17 @@ fi
 %endif
 
 %changelog
+* Wed Sep 21 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-6
+- fix postun scriptlet error (bz #736946)
+- make postun scriptlet more coherent
+- change selinux context on log files to httpd_log_t and allow access
+  to them (bz #730704)
+
+* Fri Aug 12 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-4
+- change macro conditionals to include tmpfiles.d support starting at
+  Fedora 15 (bz #730053)
+- change install lines to preserve timestamps
+
 * Fri Jul 08 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-1
 - v 3.2.1
 - add lower case script URL alias for typing impaired

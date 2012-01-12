@@ -16,7 +16,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -332,6 +332,9 @@ fi
 %endif
 
 %changelog
+* Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Wed Sep 21 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-6
 - fix postun scriptlet error (bz #736946)
 - make postun scriptlet more coherent

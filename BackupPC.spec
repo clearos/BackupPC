@@ -44,7 +44,7 @@ BuildRequires:  %{_bindir}/rsync
 BuildRequires:  %{_sbindir}/sendmail
 BuildRequires:  %{_bindir}/split
 BuildRequires:  %{_bindir}/ssh
-BuildRequires:  perl(Compress::Zlib)
+BuildRequires:  perl(Compress::Zlib), perl(Digest::MD5)
 %if 0%{?_with_systemd}
 BuildRequires:  systemd-units
 %endif
@@ -54,7 +54,7 @@ Requires:       perl(Net::FTP::AutoReconnect), perl(Net::FTP::RetrHandle)
 
 Requires:       httpd
 Requires:       perl(File::RsyncP), perl(Compress::Zlib), perl(Archive::Zip)
-Requires:       perl-Time-modules, perl(XML::RSS)
+Requires:       perl-Time-modules, perl(XML::RSS), perl(Digest::MD5)
 Requires:       rsync
 # This is a file dependency so EL5 can use samba or samba-client or
 # samba3x-client
@@ -342,6 +342,7 @@ fi
 - additional documentation about enabling correct channels in RHEL to resolve
   all dependencies (bz #749627)
 - fix bug with missing tmpfiles.d directory
+- add perl(Digest::MD5) to list of build and install dependencies
 
 * Wed Sep 21 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-6
 - fix postun scriptlet error (bz #736946)

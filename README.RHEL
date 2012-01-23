@@ -1,0 +1,22 @@
+If you are installing this software on a Red Hat Enterprise Linux (RHEL)
+server, you will have to subscribe to the "RHEL Server Optional" before
+attempting to install this component.  If you do no enable this channel, you
+will receive an error that looks similar to this:
+
+   --> Finished Dependency Resolution
+  Error: Package: BackupPC-3.2.1-1.el6.x86_64 (epel)
+             Requires: perl(Archive::Zip)
+  Error: Package: BackupPC-3.2.1-1.el6.x86_64 (epel)
+             Requires: perl(XML::RSS)
+  Error: Package: BackupPC-3.2.1-1.el6.x86_64 (epel)
+             Requires: perl-Time-modules
+  Error: Package: BackupPC-3.2.1-1.el6.x86_64 (epel)
+             Requires: perl(Time::ParseDate)
+   You could try using --skip-broken to work around the problem
+   You could try running: rpm -Va --nofiles --nodigest
+
+
+References:
+http://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F
+https://access.redhat.com/kb/docs/DOC-11313
+https://bugzilla.redhat.com/show_bug.cgi?id=749627

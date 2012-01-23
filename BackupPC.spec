@@ -26,6 +26,7 @@ Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
+Patch3:         BackupPC-3.2.1-fix-XSS-vulnerability.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -33,6 +34,7 @@ Source3:        BackupPC-README.fedora
 Source4:        BackupPC_Admin.c
 Source5:        backuppc.service
 Source6:        BackupPC.tmpfiles
+Source7:        README.RHEL
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -87,6 +89,7 @@ configurable and easy to install and maintain.
 %patch0 -p1 -b .locatedb
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
+%patch3 -p1 -b .fix-XSS-vulnerability
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -96,6 +99,7 @@ done
 chmod a-x LICENSE README
 
 cp %{SOURCE3} README.fedora
+cp %{SOURCE7} README.RHEL
 cp %{SOURCE4} BackupPC_Admin.c
 
 %if ! 0%{?_without_selinux}
@@ -183,13 +187,13 @@ sed -i s,$LOGNAME,backuppc,g init.d/linux-backuppc
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d
 install -p -m 0644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/tmpfiles.d/%{name}.conf
 %endif
+install -d $RPM_BUILD_ROOT/%{_localstatedir}/run/%{name}
 
 %if 0%{?_with_systemd}
 install -d $RPM_BUILD_ROOT/%{_unitdir}
 install -p -m 0644 %{SOURCE5} $RPM_BUILD_ROOT/%{_unitdir}/
 %else
 install -d $RPM_BUILD_ROOT/%{_initrddir}
-install -d $RPM_BUILD_ROOT/%{_localstatedir}/run/%{name}
 install -p -m 0755 init.d/linux-backuppc $RPM_BUILD_ROOT%{_initrddir}/backuppc
 %endif
 
@@ -263,9 +267,9 @@ fi
 
 # add BackupPC backup directories to PRUNEPATHS in locate database
 if [ -w %{_updatedb_conf} ]; then
-  grep ^PRUNEPATHS %{_updatedb_conf} | grep %{_sharedstatedir}/%{name} > /dev/null
+  grep ^PRUNEPATHS %{_updatedb_conf} | grep %{_localstatedir}/lib/%{name} > /dev/null
   if [ $? -eq 1 ]; then
-    sed -i '\@PRUNEPATHS@s@"$@ '%{_sharedstatedir}/%{name}'"@' %{_updatedb_conf}
+    sed -i '\@PRUNEPATHS@s@"$@ '%{_localstatedir}/lib/%{name}'"@' %{_updatedb_conf}
   fi
 fi
 :
@@ -283,7 +287,7 @@ if [ $1 -eq 0 ]; then
 
   # remove BackupPC backup directories from PRUNEPATHS in locate database
   if [ -w %{_updatedb_conf} ]; then
-    sed -i '\@PRUNEPATHS@s@[ ]*'%{_sharedstatedir}/%{name}'@@' %{_updatedb_conf} || :
+    sed -i '\@PRUNEPATHS@s@[ ]*'%{_localstatedir}/lib/%{name}'@@' %{_updatedb_conf} || :
   fi
 fi
 
@@ -298,7 +302,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%doc README README.fedora ChangeLog LICENSE doc/
+%doc README README.fedora README.RHEL ChangeLog LICENSE doc/
 
 %dir %attr(-,backuppc,backuppc) %{_localstatedir}/log/%{name} 
 %dir %attr(-,backuppc,backuppc) %{_sysconfdir}/%{name}/
@@ -313,9 +317,8 @@ fi
 
 %if 0%{?_with_tmpfilesd}
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
-%else
-%dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 
 %endif
+%dir %attr(0775,backuppc,backuppc) %{_localstatedir}/run/%{name} 
 
 %if 0%{?_with_systemd}
 %{_unitdir}/backuppc.service
@@ -332,8 +335,13 @@ fi
 %endif
 
 %changelog
-* Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-7
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+* Sun Jan 22 2012 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-7
+- change %%{_sharedstatedir} to %%{_localstatedir}/lib as these expand
+  differently on EL (bz #767719)
+- fix XSS vulnerability (bz #749846, bz #749847, bz #749848) CVE-2011-3361
+- additional documentation about enabling correct channels in RHEL to resolve
+  all dependencies (bz #749627)
+- fix bug with missing tmpfiles.d directory
 
 * Wed Sep 21 2011 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-6
 - fix postun scriptlet error (bz #736946)

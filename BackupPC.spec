@@ -16,7 +16,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        High-performance backup system
 
 Group:          Applications/System
@@ -335,6 +335,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sun Jan 22 2012 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-7
 - change %%{_sharedstatedir} to %%{_localstatedir}/lib as these expand
   differently on EL (bz #767719)

@@ -16,12 +16,12 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        High-performance backup system
-
 Group:          Applications/System
 License:        GPLv2+
 URL:            http://backuppc.sourceforge.net/
+
 Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
@@ -36,15 +36,14 @@ Source5:        backuppc.service
 Source6:        BackupPC.tmpfiles
 Source7:        README.RHEL
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-BuildRequires:  /bin/cat, /bin/df, /bin/gtar
 BuildRequires:  %{_bindir}/smbclient, %{_bindir}/nmblookup
-BuildRequires:  %{_bindir}/rsync
-BuildRequires:  %{_sbindir}/sendmail
-BuildRequires:  %{_bindir}/split
-BuildRequires:  %{_bindir}/ssh
-BuildRequires:  perl(Compress::Zlib), perl(Digest::MD5)
+BuildRequires:  rsync
+BuildRequires:  coreutils
+BuildRequires:  tar
+BuildRequires:  openssh-clients
+BuildRequires:  perl(Compress::Zlib)
+BuildRequires:  perl(Data::Dumper)
+BuildRequires:  perl(Digest::MD5)
 %if 0%{?_with_systemd}
 BuildRequires:  systemd-units
 %endif
@@ -103,7 +102,7 @@ cp %{SOURCE7} README.RHEL
 cp %{SOURCE4} BackupPC_Admin.c
 
 %if ! 0%{?_without_selinux}
-%{__mkdir} selinux
+mkdir selinux
 pushd selinux
 
 cat >%{name}.te <<EOF
@@ -335,6 +334,9 @@ fi
 %endif
 
 %changelog
+* Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
+- Fix FTBFS on F-18+
+
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 

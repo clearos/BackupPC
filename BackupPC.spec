@@ -2,21 +2,17 @@
 %global _without_selinux 1
 %endif
 
-# tmpfiles.d support starts in Fedora 15
-%if 0%{?fedora} && 0%{?fedora} > 14
-%global _with_tmpfilesd 1
-%endif
-
-# systemd was introduced in Fedora 15, but we don't support it until Fedora 16
-%if 0%{?fedora} && 0%{?fedora} > 15
-%global _with_systemd 1
+# tmpfiles.d & systemd support in all supported Fedora now, but not RHEL
+%if 0%{?rhel}
+%global _with_tmpfilesd 0
+%global _with_systemd 0
 %endif
 
 %global _updatedb_conf /etc/updatedb.conf
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -334,6 +330,9 @@ fi
 %endif
 
 %changelog
+* Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
+- cleanup build macros for Fedora
+
 * Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
 - Fix FTBFS on F-18+
 

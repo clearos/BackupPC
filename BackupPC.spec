@@ -339,6 +339,7 @@ fi
 - fix deprecated qw messages (partial fix for bz #755076)
 - CVE-2011-5081 BackupPC: XSS flaw in RestoreFile.pm
   (bz #795017, #795018, #795019)
+- Broken configuration for httpd 2.4 (bz #871353)
 
 * Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
 - Fix FTBFS on F-18+

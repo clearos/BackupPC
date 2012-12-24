@@ -23,6 +23,7 @@ Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
 Patch3:         BackupPC-3.2.1-fix-XSS-vulnerability.patch
+Patch4:         BackupPC-3.2.1-fix-XSS-vulnerability2.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -85,6 +86,7 @@ configurable and easy to install and maintain.
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .fix-XSS-vulnerability
+%patch4 -p1 -b .fix-XSS-vulnerability2
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -332,6 +334,8 @@ fi
 %changelog
 * Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
 - cleanup build macros for Fedora
+- CVE-2011-5081 BackupPC: XSS flaw in RestoreFile.pm
+  (bz #795017, #795018, #795019)
 
 * Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
 - Fix FTBFS on F-18+

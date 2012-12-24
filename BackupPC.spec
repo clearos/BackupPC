@@ -2,31 +2,29 @@
 %global _without_selinux 1
 %endif
 
-# tmpfiles.d support starts in Fedora 15
-%if 0%{?fedora} && 0%{?fedora} > 14
-%global _with_tmpfilesd 1
-%endif
-
-# systemd was introduced in Fedora 15, but we don't support it until Fedora 16
-%if 0%{?fedora} && 0%{?fedora} > 15
-%global _with_systemd 1
+# tmpfiles.d & systemd support in all supported Fedora now, but not RHEL
+%if 0%{?rhel}
+%global _with_tmpfilesd 0
+%global _with_systemd 0
 %endif
 
 %global _updatedb_conf /etc/updatedb.conf
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        7%{?dist}
+Release:        10%{?dist}
 Summary:        High-performance backup system
-
 Group:          Applications/System
 License:        GPLv2+
 URL:            http://backuppc.sourceforge.net/
+
 Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar.gz
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
 Patch3:         BackupPC-3.2.1-fix-XSS-vulnerability.patch
+Patch4:         BackupPC-3.2.1-fix-XSS-vulnerability2.patch
+Patch5:         BackupPC-3.2.1-qw.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -36,15 +34,14 @@ Source5:        backuppc.service
 Source6:        BackupPC.tmpfiles
 Source7:        README.RHEL
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-BuildRequires:  /bin/cat, /bin/df, /bin/gtar
 BuildRequires:  %{_bindir}/smbclient, %{_bindir}/nmblookup
-BuildRequires:  %{_bindir}/rsync
-BuildRequires:  %{_sbindir}/sendmail
-BuildRequires:  %{_bindir}/split
-BuildRequires:  %{_bindir}/ssh
-BuildRequires:  perl(Compress::Zlib), perl(Digest::MD5)
+BuildRequires:  rsync
+BuildRequires:  coreutils
+BuildRequires:  tar
+BuildRequires:  openssh-clients
+BuildRequires:  perl(Compress::Zlib)
+BuildRequires:  perl(Data::Dumper)
+BuildRequires:  perl(Digest::MD5)
 %if 0%{?_with_systemd}
 BuildRequires:  systemd-units
 %endif
@@ -90,6 +87,8 @@ configurable and easy to install and maintain.
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .fix-XSS-vulnerability
+%patch4 -p1 -b .fix-XSS-vulnerability2
+%patch5 -p1 -b .qw
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -103,7 +102,7 @@ cp %{SOURCE7} README.RHEL
 cp %{SOURCE4} BackupPC_Admin.c
 
 %if ! 0%{?_without_selinux}
-%{__mkdir} selinux
+mkdir selinux
 pushd selinux
 
 cat >%{name}.te <<EOF
@@ -335,6 +334,19 @@ fi
 %endif
 
 %changelog
+* Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
+- cleanup build macros for Fedora
+- fix deprecated qw messages (partial fix for bz #755076)
+- CVE-2011-5081 BackupPC: XSS flaw in RestoreFile.pm
+  (bz #795017, #795018, #795019)
+- Broken configuration for httpd 2.4 (bz #871353)
+
+* Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
+- Fix FTBFS on F-18+
+
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sun Jan 22 2012 Bernard Johnson <bjohnson@symetrix.com> - 3.2.1-7
 - change %%{_sharedstatedir} to %%{_localstatedir}/lib as these expand
   differently on EL (bz #767719)

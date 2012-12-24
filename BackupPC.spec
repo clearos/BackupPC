@@ -24,6 +24,7 @@ Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
 Patch3:         BackupPC-3.2.1-fix-XSS-vulnerability.patch
 Patch4:         BackupPC-3.2.1-fix-XSS-vulnerability2.patch
+Patch5:         BackupPC-3.2.1-qw.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -87,6 +88,7 @@ configurable and easy to install and maintain.
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .fix-XSS-vulnerability
 %patch4 -p1 -b .fix-XSS-vulnerability2
+%patch5 -p1 -b .qw
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -334,6 +336,7 @@ fi
 %changelog
 * Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
 - cleanup build macros for Fedora
+- fix deprecated qw messages (partial fix for bz #755076)
 - CVE-2011-5081 BackupPC: XSS flaw in RestoreFile.pm
   (bz #795017, #795018, #795019)
 

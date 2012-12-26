@@ -74,6 +74,9 @@ BuildRequires:  selinux-policy-devel, checkpolicy
 %endif
 Provides:       backuppc = %{version}
 
+# BuildRoot required for RHEL5
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
 %description
 BackupPC is a high-performance, enterprise-grade system for backing up Linux
 and WinXX and Mac OS X PCs and laptops to a server's disk. BackupPC is highly

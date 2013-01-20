@@ -3,16 +3,16 @@
 %endif
 
 # tmpfiles.d & systemd support in all supported Fedora now, but not RHEL
-%if 0%{?rhel}
-%global _with_tmpfilesd 0
-%global _with_systemd 0
+%if 0%{?fedora}
+%global _with_tmpfilesd 1
+%global _with_systemd 1
 %endif
 
 %global _updatedb_conf /etc/updatedb.conf
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -337,6 +337,10 @@ fi
 %endif
 
 %changelog
+* Sun Jan 20 2013 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-11
+- Missing backuppc.service file after upgrade to 3.2.1-10 causes service to
+  exit at start (bz #896626)
+
 * Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
 - cleanup build macros for Fedora
 - fix deprecated qw messages (partial fix for bz #755076)

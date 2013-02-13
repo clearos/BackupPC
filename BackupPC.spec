@@ -12,7 +12,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        11%{?dist}
+Release:        12%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -337,6 +337,9 @@ fi
 %endif
 
 %changelog
+* Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Sun Jan 20 2013 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-11
 - Missing backuppc.service file after upgrade to 3.2.1-10 causes service to
   exit at start (bz #896626)

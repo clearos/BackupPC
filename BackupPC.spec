@@ -12,7 +12,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        12%{?dist}
+Release:        13%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -42,6 +42,7 @@ BuildRequires:  openssh-clients
 BuildRequires:  perl(Compress::Zlib)
 BuildRequires:  perl(Data::Dumper)
 BuildRequires:  perl(Digest::MD5)
+BuildRequires:  perl(Pod::Usage)
 %if 0%{?_with_systemd}
 BuildRequires:  systemd-units
 %endif
@@ -337,6 +338,10 @@ fi
 %endif
 
 %changelog
+* Sun Mar 31 2013 Ville Skyttä <ville.skytta@iki.fi> - 3.2.1-13
+- Add build dependency on Pod::Usage (#913855).
+- Fix bogus dates in %%changelog.
+
 * Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
@@ -344,14 +349,14 @@ fi
 - Missing backuppc.service file after upgrade to 3.2.1-10 causes service to
   exit at start (bz #896626)
 
-* Sun Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
+* Mon Dec 24 2012 Bernard Johnson <bjohnson@symetrix.com> 3.2.1-10
 - cleanup build macros for Fedora
 - fix deprecated qw messages (partial fix for bz #755076)
 - CVE-2011-5081 BackupPC: XSS flaw in RestoreFile.pm
   (bz #795017, #795018, #795019)
 - Broken configuration for httpd 2.4 (bz #871353)
 
-* Sun Dec  6 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
+* Sun Dec  9 2012 Peter Robinson <pbrobinson@fedoraproject.org> 3.2.1-9
 - Fix FTBFS on F-18+
 
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-8
@@ -458,7 +463,7 @@ fi
 * Tue Jan 30 2007 Johan Cwiklinski <johan AT x-tnd DOT be> 3.0.0-1
 - Rebuild RPM for v 3.0.0
 
-* Sat Aug 16 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-7
+* Sat Aug 26 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-7
 - Release bump for rebuild
 
 * Tue Jul 25 2006 Mike McGrath <imlinux@gmail.com> 2.1.2-6

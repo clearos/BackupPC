@@ -12,7 +12,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        13%{?dist}
+Release:        14%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -338,6 +338,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 17 2013 Petr Pisar <ppisar@redhat.com> - 3.2.1-14
+- Perl 5.18 rebuild
+
 * Sun Mar 31 2013 Ville Skyttä <ville.skytta@iki.fi> - 3.2.1-13
 - Add build dependency on Pod::Usage (#913855).
 - Fix bogus dates in %%changelog.

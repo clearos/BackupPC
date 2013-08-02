@@ -12,7 +12,7 @@
 
 Name:           BackupPC
 Version:        3.2.1
-Release:        14%{?dist}
+Release:        15%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -338,6 +338,9 @@ fi
 %endif
 
 %changelog
+* Fri Aug 02 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-15
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Wed Jul 17 2013 Petr Pisar <ppisar@redhat.com> - 3.2.1-14
 - Perl 5.18 rebuild
 

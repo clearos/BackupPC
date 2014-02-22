@@ -373,6 +373,7 @@ fi
 - enable PIE build (bz #965523)
 - add patch that causes getpwnam to return only uid to fix selinux denials
   (bz #827854)
+- add local-fs.target and remote-fs.target to startup dependency (bz #959309)
 
 * Fri Feb 21 2014 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
 - Last upstream release

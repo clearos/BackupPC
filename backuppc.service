@@ -1,6 +1,6 @@
 [Unit]
 Description= BackupPC server
-After=syslog.target 
+After=syslog.target local-fs.target remote-fs.target
 
 [Service]
 Type=oneshot

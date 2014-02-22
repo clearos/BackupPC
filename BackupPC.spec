@@ -12,7 +12,7 @@
 
 Name:           BackupPC
 Version:        3.3.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -363,6 +363,9 @@ fi
 %endif
 
 %changelog
+* Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> 3.3.0-2
+- fix typo in README.RHEL
+
 * Sun Apr 28 2013 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
 - Last upstream release
 - Remove no longer needeed patches

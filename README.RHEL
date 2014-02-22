@@ -1,6 +1,6 @@
 If you are installing this software on a Red Hat Enterprise Linux (RHEL)
 server, you will have to subscribe to the "RHEL Server Optional" before
-attempting to install this component.  If you do no enable this channel, you
+attempting to install this component.  If you do not enable this channel, you
 will receive an error that looks similar to this:
 
    --> Finished Dependency Resolution

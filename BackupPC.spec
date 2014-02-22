@@ -338,6 +338,10 @@ fi
 %endif
 
 %changelog
+* Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> - 3.3.0-1
+- v 3.3.0
+- fixed typos
+
 * Fri Aug 02 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-15
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 

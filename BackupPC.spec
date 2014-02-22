@@ -370,7 +370,7 @@ fi
 - fix typo in README.RHEL
 - enable PIE build (bz #965523)
 
-* Sun Apr 28 2013 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
+* Fri Feb 21 2014 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
 - Last upstream release
 - Remove no longer needeed patches
 - Fix incorrect-fsf-address to reduce rpmlint output

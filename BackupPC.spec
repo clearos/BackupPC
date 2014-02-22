@@ -1,3 +1,6 @@
+# enable -PIE build
+%global _hardened_build 1
+
 %if 0%{?rhel} && 0%{?rhel} < 5
 %global _without_selinux 1
 %endif
@@ -365,6 +368,7 @@ fi
 %changelog
 * Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> 3.3.0-2
 - fix typo in README.RHEL
+- enable PIE build (bz #965523)
 
 * Sun Apr 28 2013 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
 - Last upstream release

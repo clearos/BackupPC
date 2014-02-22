@@ -11,8 +11,8 @@
 %global _updatedb_conf /etc/updatedb.conf
 
 Name:           BackupPC
-Version:        3.2.1
-Release:        15%{?dist}
+Version:        3.3.0
+Release:        1%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -22,9 +22,6 @@ Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
-Patch3:         BackupPC-3.2.1-fix-XSS-vulnerability.patch
-Patch4:         BackupPC-3.2.1-fix-XSS-vulnerability2.patch
-Patch5:         BackupPC-3.2.1-qw.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -90,14 +87,42 @@ configurable and easy to install and maintain.
 %patch0 -p1 -b .locatedb
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
-%patch3 -p1 -b .fix-XSS-vulnerability
-%patch4 -p1 -b .fix-XSS-vulnerability2
-%patch5 -p1 -b .qw
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
   iconv -f ISO-8859-1 -t UTF-8 $f > $f.utf && mv $f.utf $f
 done
+
+#incorrect FSF address
+sed -i 's|59 Temple Place, Suite 330, Boston, MA  *02111-1307  USA|51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA|' \
+    lib/BackupPC/CGI/Queue.pm \
+    bin/BackupPC_archive \
+    lib/BackupPC/CGI/StartServer.pm \
+    lib/BackupPC/CGI/HostInfo.pm \
+    lib/BackupPC/CGI/Archive.pm \
+    lib/BackupPC/CGI/LOGlist.pm \
+    lib/BackupPC/FileZIO.pm \
+    lib/BackupPC/CGI/GeneralInfo.pm \
+    lib/BackupPC/CGI/Browse.pm \
+    lib/BackupPC/CGI/RSS.pm \
+    lib/BackupPC/CGI/Restore.pm \
+    lib/BackupPC/CGI/RestoreFile.pm \
+    bin/BackupPC_restore \
+    lib/BackupPC/CGI/DirHistory.pm \
+    lib/BackupPC/Xfer/Archive.pm \
+    lib/BackupPC/Config/Meta.pm \
+    lib/BackupPC/CGI/ArchiveInfo.pm \
+    lib/BackupPC/CGI/ReloadServer.pm \
+    lib/BackupPC/CGI/View.pm \
+    bin/BackupPC_tarExtract \
+    lib/BackupPC/CGI/EmailSummary.pm \
+    lib/BackupPC/Xfer/RsyncFileIO.pm \
+    lib/BackupPC/CGI/RestoreInfo.pm \
+    lib/BackupPC/CGI/StartStopBackup.pm \
+    lib/BackupPC/CGI/StopServer.pm \
+    lib/BackupPC/CGI/AdminOptions.pm \
+    lib/BackupPC/CGI/Summary.pm \
+    lib/BackupPC/CGI/EditConfig.pm
 
 chmod a-x LICENSE README
 
@@ -338,6 +363,11 @@ fi
 %endif
 
 %changelog
+* Sun Apr 28 2013 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
+- Last upstream release
+- Remove no longer needeed patches
+- Fix incorrect-fsf-address to reduce rpmlint output
+
 * Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> - 3.3.0-1
 - v 3.3.0
 - fixed typos

@@ -1,0 +1,24 @@
+diff -Naur BackupPC-3.3.0-pristine/lib/BackupPC/CGI/Lib.pm BackupPC-3.3.0/lib/BackupPC/CGI/Lib.pm
+--- BackupPC-3.3.0-pristine/lib/BackupPC/CGI/Lib.pm	2013-04-14 14:43:32.000000000 -0600
++++ BackupPC-3.3.0/lib/BackupPC/CGI/Lib.pm	2014-02-21 22:42:25.844412429 -0700
+@@ -144,7 +144,7 @@
+     # Verify we are running as the correct user
+     #
+     if ( $Conf{BackupPCUserVerify}
+-	    && $> != (my $uid = (getpwnam($Conf{BackupPCUser}))[2]) ) {
++	    && $> != (my $uid = (getpwnam($Conf{BackupPCUser}))) ) {
+ 	ErrorExit(eval("qq{$Lang->{Wrong_user__my_userid_is___}}"), <<EOF);
+ This script needs to run as the user specified in \$Conf{BackupPCUser},
+ which is set to $Conf{BackupPCUser}.
+diff -Naur BackupPC-3.3.0-pristine/lib/BackupPC/Lib.pm BackupPC-3.3.0/lib/BackupPC/Lib.pm
+--- BackupPC-3.3.0-pristine/lib/BackupPC/Lib.pm	2013-04-14 14:43:32.000000000 -0600
++++ BackupPC-3.3.0/lib/BackupPC/Lib.pm	2014-02-21 22:39:24.037478780 -0700
+@@ -160,7 +160,7 @@
+     #
+     if ( !$noUserCheck
+ 	    && $bpc->{Conf}{BackupPCUserVerify}
+-	    && $> != (my $uid = (getpwnam($bpc->{Conf}{BackupPCUser}))[2]) ) {
++	    && $> != (my $uid = (getpwnam($bpc->{Conf}{BackupPCUser}))) ) {
+ 	print(STDERR "$0: Wrong user: my userid is $>, instead of $uid"
+ 	    . " ($bpc->{Conf}{BackupPCUser})\n");
+ 	print(STDERR "Please su $bpc->{Conf}{BackupPCUser} first\n");

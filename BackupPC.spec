@@ -25,6 +25,7 @@ Source0:        http://downloads.sourceforge.net/backuppc/%{name}-%{version}.tar
 Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
+Patch3:         BackupPC-3.3.0-fix-shadow-access.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -90,6 +91,7 @@ configurable and easy to install and maintain.
 %patch0 -p1 -b .locatedb
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
+%patch3 -p1 -b .shadow-access
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -369,6 +371,8 @@ fi
 * Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> 3.3.0-2
 - fix typo in README.RHEL
 - enable PIE build (bz #965523)
+- add patch that causes getpwnam to return only uid to fix selinux denials
+  (bz #827854)
 
 * Fri Feb 21 2014 Johan Cwiklinski <johan AT x-tnd DOT be> 3.3.0-1
 - Last upstream release

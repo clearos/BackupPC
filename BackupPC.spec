@@ -15,7 +15,7 @@
 
 Name:           BackupPC
 Version:        3.3.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -368,6 +368,9 @@ fi
 %endif
 
 %changelog
+* Fri Jun 06 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Fri Feb 21 2014 Bernard Johnson <bjohnson@symetrix.com> 3.3.0-2
 - fix typo in README.RHEL
 - enable PIE build (bz #965523)

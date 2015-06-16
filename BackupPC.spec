@@ -15,7 +15,7 @@
 
 Name:           BackupPC
 Version:        3.3.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -368,6 +368,9 @@ fi
 %endif
 
 %changelog
+* Tue Jun 16 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Sat Mar 14 2015 Bernard Johnson <bjohnson@symetrix.com> - 3.3.1-1
 - v 3.3.1
 

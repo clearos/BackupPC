@@ -40,6 +40,7 @@ BuildRequires:  rsync
 BuildRequires:  coreutils
 BuildRequires:  tar
 BuildRequires:  openssh-clients
+BuildRequires:  perl-generators
 BuildRequires:  perl(Compress::Zlib)
 BuildRequires:  perl(Data::Dumper)
 BuildRequires:  perl(Digest::MD5)

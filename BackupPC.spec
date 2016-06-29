@@ -5,8 +5,8 @@
 %global _without_selinux 1
 %endif
 
-# tmpfiles.d & systemd support in all supported Fedora now, but not RHEL
-%if 0%{?fedora}
+# tmpfiles.d & systemd support in all supported Fedora now, but not RHEL < 7
+%if 0%{?fedora} || 0%{?rhel} >= 7
 %global _with_tmpfilesd 1
 %global _with_systemd 1
 %endif
@@ -15,7 +15,7 @@
 
 Name:           BackupPC
 Version:        3.3.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -369,6 +369,9 @@ fi
 %endif
 
 %changelog
+* Wed Jun 29 2016 Benjamin Lefoul <lef@fedoraproject.org> - 3.3.1-4
+- Support for systemd and tmpfiles for RHEL >= 7
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.3.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 

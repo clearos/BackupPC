@@ -94,7 +94,7 @@ configurable and easy to install and maintain.
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .shadow-access
-%patch4 -p1 -b .Browse.pm
+%patch4 -p1 -b .oldperl
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do

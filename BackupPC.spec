@@ -15,7 +15,7 @@
 
 Name:           BackupPC
 Version:        3.3.1
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -27,6 +27,7 @@ Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
 Patch3:         BackupPC-3.3.0-fix-shadow-access.patch
 Patch4:         BackupPC-3.3.1-perl_defined_at_deprecation.patch
+Patch5:         BackupPC-3.3.1-IPv6-support.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -95,6 +96,7 @@ configurable and easy to install and maintain.
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .shadow-access
 %patch4 -p1 -b .oldperl
+%patch5 -p0 -b .ipv6support
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -371,6 +373,9 @@ fi
 %endif
 
 %changelog
+* Tue Oct 18 2016 Benjamin Lefoul <lef@fedoraproject.org> - 3.3.1-6
+- Some IPv6 support (BZ 1385630)
+
 * Fri Jul 15 2016 Benjamin Lefoul <lef@fedoraproject.org> - 3.3.1-5
 - Deprecation of defined(@array) in perl
 

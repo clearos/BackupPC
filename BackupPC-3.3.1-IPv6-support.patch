@@ -1,0 +1,171 @@
+Index: configure.pl
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/configure.pl,v
+retrieving revision 1.51
+diff -u -w -r1.51 configure.pl
+--- configure.pl	12 Jan 2015 00:56:40 -0000	1.51
++++ configure.pl	17 Oct 2016 10:42:05 -0000
+@@ -253,6 +253,7 @@
+     nmblookup      => "NmbLookupPath",
+     rsync          => "RsyncClientPath",
+     ping           => "PingPath",
++    'ping6/ping'   => "PingPath6",
+     df             => "DfPath",
+     'ssh/ssh2'     => "SshPath",
+     sendmail       => "SendmailPath",
+Index: bin/BackupPC_dump
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/bin/BackupPC_dump,v
+retrieving revision 1.51
+diff -u -w -r1.51 BackupPC_dump
+--- bin/BackupPC_dump	12 Jan 2015 00:56:40 -0000	1.51
++++ bin/BackupPC_dump	17 Oct 2016 10:42:05 -0000
+@@ -493,7 +493,7 @@
+     } else {
+         $host = $client;
+     }
+-    if ( !defined(gethostbyname($host)) ) {
++    if ( !defined($bpc->resolve($host)) ) {
+         #
+         # Ok, NS doesn't know about it.  Maybe it is a NetBios name
+         # instead.
+Index: bin/BackupPC_restore
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/bin/BackupPC_restore,v
+retrieving revision 1.36
+diff -u -w -r1.36 BackupPC_restore
+--- bin/BackupPC_restore	12 Jan 2015 00:56:40 -0000	1.36
++++ bin/BackupPC_restore	17 Oct 2016 10:42:05 -0000
+@@ -167,7 +167,7 @@
+ # Find its IP address
+ #
+ if ( $hostIP !~ /\d+\.\d+\.\d+\.\d+/ ) {
+-    if ( !defined(gethostbyname($host)) ) {
++    if ( !defined($bpc->resolve($host)) ) {
+ 	#
+ 	# Ok, NS doesn't know about it.  Maybe it is a NetBios name
+ 	# instead.
+Index: conf/config.pl
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/conf/config.pl,v
+retrieving revision 1.58
+diff -u -w -r1.58 config.pl
+--- conf/config.pl	12 Jan 2015 00:56:40 -0000	1.58
++++ conf/config.pl	17 Oct 2016 10:42:06 -0000
+@@ -1652,9 +1652,24 @@
+ $Conf{PingPath} = '';
+ 
+ #
++# Like PingPath, but for IPv6.  Security caution: normal users
++# should not be allowed to write to this file or directory.
++# In some environments, this is something like '/usr/bin/ping6'.
++# In modern environments, the regular ping command can handle both
++# IPv4 and IPv6. In the latter case, just set it to  $Conf{PingPath}
++#
++# If you want to disable ping checking for IPv6 hosts, set this to
++# some program that exits with 0 status, eg:
++#
++#     $Conf{PingPath6} = '/bin/echo';
++#
++$Conf{PingPath6} = '';
++
++#
+ # Ping command.  The following variables are substituted at run-time:
+ #
+-#   $pingPath      path to ping ($Conf{PingPath})
++#   $pingPath      path to ping ($Conf{PingPath} or $Conf{PingPath6})
++#                  depending on the address type of $host.
+ #   $host          host name
+ #
+ # Wade Brown reports that on solaris 2.6 and 2.7 ping -s returns the wrong
+Index: lib/BackupPC/Config.pm
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/lib/BackupPC/Config.pm,v
+retrieving revision 1.3
+diff -u -w -r1.3 Config.pm
+--- lib/BackupPC/Config.pm	2 Aug 2003 08:01:43 -0000	1.3
++++ lib/BackupPC/Config.pm	17 Oct 2016 10:42:06 -0000
+@@ -269,6 +269,9 @@
+     PingPath                     => {struct => 'SCALAR',
+                                      type   => 'STRING', },
+ 
++    PingPath6                    => {struct => 'SCALAR',
++                                     type   => 'STRING', },
++
+     PingArgs                     => {struct => 'SCALAR',
+                                      type   => 'STRING', },
+ 
+Index: lib/BackupPC/Lib.pm
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/lib/BackupPC/Lib.pm,v
+retrieving revision 1.53
+diff -u -w -r1.53 Lib.pm
+--- lib/BackupPC/Lib.pm	12 Jan 2015 00:56:41 -0000	1.53
++++ lib/BackupPC/Lib.pm	17 Oct 2016 10:42:06 -0000
+@@ -982,7 +982,7 @@
+     }
+ 
+     my $args = {
+-	pingPath => $bpc->{Conf}{PingPath},
++	pingPath => $bpc->getPingPathByAddressType( $host ),
+ 	host     => $host,
+     };
+     $pingCmd = $bpc->cmdVarSubstitute($bpc->{Conf}{PingCmd}, $args);
+@@ -1543,4 +1543,27 @@
+     return $glob;
+ }
+ 
++#
++# Attempts to resolve a hostname.
++# Return 4 if it resolves to an IPv4 address, 6 if it resolves to an IPv6
++# address or undef if it can not be resolved.
++#
++sub resolve
++{
++    my ( $bpc, $host ) = @_;
++    my ( $err, @addrs ) = Socket::getaddrinfo($host);
++    return undef if ( $err );
++    return (($addrs[0])->{'family'} == Socket::AF_INET6) ? 6 : 4;
++}
++
++#
++# Return pingPath depending on address type of target.
++#
++sub getPingPathByAddressType
++{
++    my ( $bpc, $host ) = @_;
++    my $at = $bpc->resolve( $host ) || 4;
++    return ($at == 6) ? $bpc->{Conf}{PingPath6} : $bpc->{Conf}{PingPath};
++}
++
+ 1;
+Index: lib/BackupPC/CGI/EditConfig.pm
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/lib/BackupPC/CGI/EditConfig.pm,v
+retrieving revision 1.29
+diff -u -w -r1.29 EditConfig.pm
+--- lib/BackupPC/CGI/EditConfig.pm	12 Jan 2015 00:56:41 -0000	1.29
++++ lib/BackupPC/CGI/EditConfig.pm	17 Oct 2016 10:42:06 -0000
+@@ -86,6 +86,7 @@
+ 	    {name => "SshPath"},
+ 	    {name => "NmbLookupPath"},
+ 	    {name => "PingPath"},
++	    {name => "PingPath6"},
+ 	    {name => "DfPath"},
+ 	    {name => "SplitPath"},
+ 	    {name => "ParPath"},
+Index: lib/BackupPC/Config/Meta.pm
+===================================================================
+RCS file: /cvsroot/backuppc/BackupPC/lib/BackupPC/Config/Meta.pm,v
+retrieving revision 1.28
+diff -u -w -r1.28 Meta.pm
+--- lib/BackupPC/Config/Meta.pm	12 Jan 2015 00:56:41 -0000	1.28
++++ lib/BackupPC/Config/Meta.pm	17 Oct 2016 10:42:06 -0000
+@@ -85,6 +85,7 @@
+     SshPath	 	=> {type => "execPath", undefIfEmpty => 1},
+     NmbLookupPath 	=> {type => "execPath", undefIfEmpty => 1},
+     PingPath	 	=> {type => "execPath", undefIfEmpty => 1},
++    PingPath6	 	=> {type => "execPath", undefIfEmpty => 1},
+     DfPath	 	=> {type => "execPath", undefIfEmpty => 1},
+     DfCmd	 	=> "string",
+     SplitPath	 	=> {type => "execPath", undefIfEmpty => 1},

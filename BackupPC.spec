@@ -368,6 +368,7 @@ fi
 %{_datadir}/selinux/packages/%{name}/%{name}.pp
 %endif
 
+
 %changelog
 * Tue Jan 31 2017 ClearFoundation <developer@clearfoundation.com> - 3.3.2-1
 - Bumped to 3.3.2 to handle Samba 4.3.x update

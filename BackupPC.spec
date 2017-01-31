@@ -14,8 +14,8 @@
 %global _updatedb_conf /etc/updatedb.conf
 
 Name:           BackupPC
-Version:        3.3.1
-Release:        5%{?dist}
+Version:        3.3.2
+Release:        1%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -26,7 +26,6 @@ Patch0:         BackupPC-3.2.1-locatedb.patch
 Patch1:         BackupPC-3.2.1-rundir.patch
 Patch2:         BackupPC-3.2.1-piddir.patch
 Patch3:         BackupPC-3.3.0-fix-shadow-access.patch
-Patch4:         BackupPC-3.3.1-perl_defined_at_deprecation.patch
 Source1:        BackupPC.htaccess
 Source2:        BackupPC.logrotate
 Source3:        BackupPC-README.fedora
@@ -94,7 +93,6 @@ configurable and easy to install and maintain.
 %patch1 -p1 -b .rundir
 %patch2 -p1 -b .piddir
 %patch3 -p1 -b .shadow-access
-%patch4 -p1 -b .oldperl
 
 sed -i "s|\"backuppc\"|\"$LOGNAME\"|g" configure.pl
 for f in ChangeLog doc/BackupPC.pod doc/BackupPC.html; do
@@ -371,6 +369,9 @@ fi
 %endif
 
 %changelog
+* Tue Jan 31 2017 ClearFoundation <developer@clearfoundation.com> - 3.3.2-1
+- Bumped to 3.3.2 to handle Samba 4.3.x update
+
 * Fri Jul 15 2016 Benjamin Lefoul <lef@fedoraproject.org> - 3.3.1-5
 - Deprecation of defined(@array) in perl
 

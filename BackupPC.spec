@@ -15,7 +15,7 @@
 
 Name:           BackupPC
 Version:        3.3.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        High-performance backup system
 Group:          Applications/System
 License:        GPLv2+
@@ -295,7 +295,7 @@ if [ $1 -eq 1 ]; then
   chkconfig --add backuppc || :
   service httpd condrestart > /dev/null 2>&1 || :
   %endif
-  %{_sbindir}/usermod -a -G backuppc apache || :
+  %{_sbindir}/usermod -a -G backuppc webconfig || :
 fi
 
 
@@ -309,7 +309,7 @@ fi
 :
 
 %postun
-# clear out any BackupPC configuration in apache
+# clear out any BackupPC configuration in webconfig
 service httpd condrestart > /dev/null 2>&1 || :
 
 if [ $1 -eq 0 ]; then
@@ -360,8 +360,8 @@ fi
 %attr(0755,root,root) %{_initrddir}/backuppc
 %endif
 
-%attr(4750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin
-%attr(750,backuppc,apache) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
+%attr(4750,backuppc,webconfig) %{_datadir}/%{name}/sbin/BackupPC_Admin
+%attr(750,backuppc,webconfig) %{_datadir}/%{name}/sbin/BackupPC_Admin.pl
 %attr(-,backuppc,root) %{_localstatedir}/lib/%{name}/
 
 %if ! 0%{?_without_selinux}
